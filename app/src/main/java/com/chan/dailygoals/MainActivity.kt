@@ -23,9 +23,6 @@ class MainActivity : AppCompatActivity() {
         window.navigationBarColor = resources.getColor(R.color.colorAccent)
         if(FirebaseCustomManager.allTasks.isEmpty())
         FirebaseCustomManager.loadAllData()
-        val host: NavHostFragment = supportFragmentManager
-            .findFragmentById(R.id.titleFragment) as NavHostFragment? ?: return
-
 
     }
 
