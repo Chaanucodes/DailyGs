@@ -23,9 +23,11 @@ class TitleFragment : Fragment() {
 
     private lateinit var navController: NavController
     private lateinit var mAdapter: TitleAdapter
-
-
     private lateinit var viewModel: TitleViewModel
+
+    companion object{
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
