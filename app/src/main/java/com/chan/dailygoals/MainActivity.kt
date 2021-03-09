@@ -4,6 +4,7 @@ import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -35,12 +36,12 @@ class MainActivity : AppCompatActivity() {
 
             when(i) {
                 0 -> {
-//                    tab.icon = resources.getDrawable(R.drawable.ic_all_posts_frag_tab)
-                    tab.text = "All posts"
+//                    tab.icon = resources.getDrawable(R.drawable.ic_home_bottom_nav)
+                    tab.text = "Daily Reports"
                 }
                 1 -> {
-//                    tab.icon = resources.getDrawable(R.drawable.ic_my_posts_frag_tab)
-                    tab.text = "My posts"
+//                    tab.icon = resources.getDrawable(R.drawable.ic_stats_bottom_nav)
+                    tab.text = "My stats"
                 }
             }
 
@@ -51,6 +52,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+    override fun onBackPressed() {
+        if (pager.currentItem == 0) {
+                super.onBackPressed()
+        }else {
+            pager.currentItem = pager.currentItem - 1
+        }
+    }
 
 
     override fun onDestroy() {

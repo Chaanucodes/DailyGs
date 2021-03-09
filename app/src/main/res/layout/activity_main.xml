@@ -18,9 +18,10 @@
             android:layout_height="40dp"
             app:tabRippleColor="@color/colorPrimary"
             app:tabIconTintMode="src_in"
+            app:tabTextColor="@color/colorAccent"
             app:tabIndicator="@color/colorAccent"
             app:tabIconTint="@color/colorAccent"
-            app:tabSelectedTextColor="@color/colorAccent"
+            app:tabSelectedTextColor="@color/colorBorderListItem"
             app:tabMode="fixed"
             app:tabMaxWidth="0dp"
             app:tabGravity="fill" />

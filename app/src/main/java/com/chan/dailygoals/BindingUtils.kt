@@ -9,3 +9,7 @@ import androidx.databinding.BindingAdapter
 fun TextView.addPercentageSign(percent : Int){
     this.text = "$percent%"
 }
+@BindingAdapter("addAveragePrefix")
+fun TextView.addAveragePrefix(days : Int){
+    this.text = "Total days active : $days"
+}
