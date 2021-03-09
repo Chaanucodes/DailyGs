@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="task"
+            type="com.chan.dailygoals.models.DailyTasks" />
+    </data>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/title_task_item"
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:layout_gravity="center"
+            android:text="@{task.taskName}"
+            android:textColor="@color/white"
+            tools:text="Workout"
+            android:layout_marginEnd="16dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/percentage_task_item"
+            android:text="@{String.valueOf(task.progress)}"
+            android:textColor="@color/white"
+            tools:text="70%"
+            android:layout_gravity="center"
+            android:layout_marginEnd="16dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+
+        <SeekBar
+            android:id="@+id/seekbar_task_item"
+            android:layout_gravity="center"
+            android:layout_width="0dp"
+            android:layout_weight="4"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorAccent"
+            android:max="100"
+            android:progress="@{task.progress}"
+            android:progressBackgroundTint="@color/white"
+            android:progressTint="@color/colorAccent"
+            tools:progress="70" />
+
+        <ImageButton
+            android:padding="0dp"
+            android:id="@+id/popup_settings_task_item"
+            android:backgroundTint="@color/weak_transparent"
+            android:src="@drawable/ic_settings_task_item"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+    </LinearLayout>
+</layout>

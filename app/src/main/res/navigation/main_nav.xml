@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav"
+    app:startDestination="@id/titleFragment">
+    <fragment
+        android:id="@+id/titleFragment"
+        android:name="com.chan.dailygoals.title.TitleFragment"
+        android:label="title_fragment"
+        tools:layout="@layout/title_fragment" >
+        <action
+            android:id="@+id/action_titleFragment_to_tasksFragment"
+            app:destination="@id/tasksFragment"
+            app:popUpTo="@id/titleFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/tasksFragment"
+        android:name="com.chan.dailygoals.tasks.TasksFragment"
+        android:label="tasks_fragment"
+        tools:layout="@layout/tasks_fragment" >
+        <argument
+            android:name="date"
+            app:argType="string"
+            android:defaultValue="today" />
+    </fragment>
+    <fragment
+        android:id="@+id/userStatsFragment"
+        android:name="com.chan.dailygoals.userData.UserStatsFragment"
+        android:label="fragment_user_stats"
+        tools:layout="@layout/fragment_user_stats" />
+</navigation>

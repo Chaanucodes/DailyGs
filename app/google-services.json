@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "248283362735",
+    "project_id": "daily-goals-8d608",
+    "storage_bucket": "daily-goals-8d608.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:248283362735:android:0f4098993f00860c85eb5a",
+        "android_client_info": {
+          "package_name": "com.chan.dailygoals"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "248283362735-kc49q0o66hmgi5uhn71er5oq7bn85t98.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chan.dailygoals",
+            "certificate_hash": "f9268ad8633ad955dde4c4db0487cc2ad656e90a"
+          }
+        },
+        {
+          "client_id": "248283362735-o6pmc7q28ngns9tptv0bd3cahud022e8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu6ecE4JOFZZ36PwZDvAKn8Yo_Cw2Z8D8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "248283362735-o6pmc7q28ngns9tptv0bd3cahud022e8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

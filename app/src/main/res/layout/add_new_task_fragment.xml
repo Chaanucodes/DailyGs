@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_gravity="center"
+    android:padding="8dp"
+    android:background="@drawable/dialog_frag_bg"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <SeekBar
+        android:id="@+id/seek_progress_new_task_dialog"
+        android:layout_width="128dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:ems="10"
+        android:progress="0"
+        app:layout_constraintStart_toEndOf="@+id/text_progress_new_task_dialog"
+        app:layout_constraintTop_toBottomOf="@+id/edit_name_new_task_dialog" />
+
+    <TextView
+        android:id="@+id/text_name_new_task_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="32dp"
+        android:text="Task Name"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/text_progress_new_task_dialog"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_progress_new_task_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Progress"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_name_new_task_dialog" />
+
+    <EditText
+        android:id="@+id/edit_name_new_task_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:ems="10"
+        android:textColor="@color/white"
+        android:textColorHint="@color/colorBorderListItem"
+        android:inputType="textPersonName"
+        android:hint="Task name here"
+        app:layout_constraintBaseline_toBaselineOf="@+id/text_name_new_task_dialog"
+        app:layout_constraintStart_toEndOf="@+id/text_name_new_task_dialog"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_live_progress_new_task_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="0%"
+        app:layout_constraintBaseline_toBaselineOf="@+id/text_progress_new_task_dialog"
+        app:layout_constraintStart_toEndOf="@+id/seek_progress_new_task_dialog" />
+
+    <Button
+        android:id="@+id/done_button_new_task_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:text="@string/done_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/cancel_button_new_task_done"
+        app:layout_constraintTop_toBottomOf="@+id/text_progress_new_task_dialog" />
+
+    <Button
+        android:id="@+id/cancel_button_new_task_done"
+        style="?attr/materialButtonOutlinedStyle"
+        app:strokeColor="@color/colorBorderListItem"
+        android:textColor="@color/colorAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@android:string/cancel"
+        app:layout_constraintBaseline_toBaselineOf="@+id/done_button_new_task_dialog"
+        app:layout_constraintEnd_toStartOf="@+id/done_button_new_task_dialog"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Add new task"
+        android:textColor="@color/colorBorderListItem"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
