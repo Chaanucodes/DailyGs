@@ -3,6 +3,7 @@ package com.chan.dailygoals
 import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
@@ -17,6 +18,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val pagerAdapter = ScreenSlidePagerAdapter(this)
         setContentView(R.layout.activity_main)
 
 //        actionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.colorPrimaryDark)))
@@ -27,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         window.navigationBarColor = resources.getColor(R.color.colorAccent)
         if(FirebaseCustomManager.allTasks.isEmpty())
         FirebaseCustomManager.loadAllData()
-        val pagerAdapter = ScreenSlidePagerAdapter(this)
+
         pager.adapter = pagerAdapter
 //        binding.pager.setPageTransformer(ZoomOutPageTransformer())
 
@@ -51,6 +53,17 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+
+    fun hideTab(){
+        tabLayout.visibility = View.GONE
+    }
+
+    fun showTab(){
+        tabLayout.visibility = View.VISIBLE
+    }
+
+
 
 
     override fun onBackPressed() {

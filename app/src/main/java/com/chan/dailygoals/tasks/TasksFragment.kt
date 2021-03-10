@@ -1,21 +1,24 @@
 package com.chan.dailygoals.tasks
 
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.chan.dailygoals.MainActivity
 import com.chan.dailygoals.R
 import com.chan.dailygoals.convertToDashDate
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import kotlinx.android.synthetic.main.tasks_fragment.*
+
 
 class TasksFragment : Fragment() {
 
@@ -23,6 +26,19 @@ class TasksFragment : Fragment() {
     private lateinit var viewModel: TasksViewModel
     private lateinit var mAdapter: TasksListAdapter
     private lateinit var args: TasksFragmentArgs
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        //THIS IS TO ADD A CUSTOM FUNCTIONALITY TO BACK BUTTON ONLY FOR THIS FRAGMENT
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true /* enabled by default */) {
+                override fun handleOnBackPressed() {
+                    findNavController().popBackStack()
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,8 +67,6 @@ class TasksFragment : Fragment() {
         }
 
         recycler_view_tasks.adapter = mAdapter
-        taskDoneButton.setOnClickListener {
-        }
 
         taskAddbutton.setOnClickListener {
             callAddNewTaskFragment()
@@ -110,10 +124,12 @@ class TasksFragment : Fragment() {
 
     override fun onStop() {
         DialogFragmentDataCallback.tempDailyTaskObject.value = null
+        (activity as MainActivity).showTab()
         super.onStop()
     }
 
     override fun onResume() {
+        (activity as MainActivity).hideTab()
         (requireActivity() as AppCompatActivity). supportActionBar?.title = "Activities"
         super.onResume()
     }

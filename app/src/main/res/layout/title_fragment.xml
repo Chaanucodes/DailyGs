@@ -33,7 +33,7 @@
         app:rippleColor="@color/colorAccent"
         app:borderWidth="0dp"
         app:elevation="0dp"
-        android:backgroundTint="@color/transparent_color"
+        android:backgroundTint="@color/transparent_med_weak"
         app:tint="@color/colorAccent"
         android:src="@drawable/ic_task_add"
         app:layout_constraintBottom_toBottomOf="parent"

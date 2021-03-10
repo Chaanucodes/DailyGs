@@ -80,8 +80,6 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
                 item?.let {
                     if(it.itemId == R.id.action_delete_task){
                         FirebaseCustomManager.deleteTask(binding.titleTaskItem.text.toString())
-                    }else if(it.itemId == R.id.action_edit_task){
-
                     }
                 }
                 true
