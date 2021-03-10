@@ -120,7 +120,10 @@ object FirebaseCustomManager {
             .document("${FirebaseAuth.getInstance().currentUser?.uid}")
             .collection("ProfileAnalytics").document("ProfileData")
             .get().addOnSuccessListener {documentSnapshot ->
-                daysActive = documentSnapshot.get("daysActive") as Long
+                documentSnapshot.get("daysActive")?.let {
+                    daysActive = it as Long
+                }
+
                 Log.i("FIRE_BAE", "$daysActive")
             }
     }
@@ -153,7 +156,7 @@ object FirebaseCustomManager {
         FirebaseFirestore.getInstance().collection("allUsers")
             .document("${FirebaseAuth.getInstance().currentUser?.uid}")
             .collection("ProfileAnalytics").document("ProfileData")
-            .update(
+            .set(
                 hashMapOf(
                     "daysActive" to daysActive
                 ) as Map<String, Any>
