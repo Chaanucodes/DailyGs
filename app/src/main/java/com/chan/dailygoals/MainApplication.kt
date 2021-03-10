@@ -10,6 +10,7 @@ class MainApplication : Application() {
 
     override fun onCreate() {
         if (FirebaseAuth.getInstance().currentUser!=null)
+            FirebaseCustomManager.loadUserName()
             FirebaseCustomManager.loadAnalyticsData()
         super.onCreate()
     }

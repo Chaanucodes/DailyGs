@@ -48,10 +48,7 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
-
         tabLayoutMediator.attach()
-
-
     }
 
 

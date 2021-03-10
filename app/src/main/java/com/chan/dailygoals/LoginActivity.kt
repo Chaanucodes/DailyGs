@@ -8,6 +8,8 @@ import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
+import androidx.core.text.isDigitsOnly
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -18,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_login.*
 class LoginActivity : AppCompatActivity() {
 
     private val REQ_CODE_AUTH = 2002
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -30,6 +33,7 @@ class LoginActivity : AppCompatActivity() {
         window.navigationBarColor = resources.getColor(R.color.colorAccent)
 
         if(FirebaseAuth.getInstance().currentUser != null){
+            textInputLayoutLogin.visibility = View.GONE
             buttonLogin.visibility = View.GONE
             loading_text_view.visibility = View.VISIBLE
             FirebaseCustomManager.loadTodaysData()
@@ -39,7 +43,14 @@ class LoginActivity : AppCompatActivity() {
             }
         }
         buttonLogin.setOnClickListener {
-            logon()
+            if(edit_name_login.text.toString().isBlank()){
+                Toast.makeText(this, "Please enter a valid name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }else{
+                FirebaseCustomManager.userName = edit_name_login.text.toString()
+                logon()
+            }
+
         }
     }
 
@@ -77,6 +88,7 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if(requestCode == REQ_CODE_AUTH){
+            FirebaseCustomManager.passUsersName()
             FirebaseCustomManager.loadAnalyticsData()
             FirebaseCustomManager.loadTodaysData()
             FirebaseCustomManager.loadAllData(

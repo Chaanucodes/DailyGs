@@ -66,7 +66,8 @@ class TitleFragment : Fragment() {
     }
 
     override fun onResume() {
-        (requireActivity() as AppCompatActivity). supportActionBar?.title = "Daily progress"
+        (requireActivity() as AppCompatActivity). supportActionBar?.title =
+            "Welcome, ${FirebaseCustomManager.userName}"
         super.onResume()
     }
 

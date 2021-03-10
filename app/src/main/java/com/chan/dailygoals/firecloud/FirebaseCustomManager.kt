@@ -15,6 +15,7 @@ import com.google.firebase.firestore.SetOptions
 
 object FirebaseCustomManager {
 
+    var userName: String = ""
     val docRef = FirebaseFirestore.getInstance().collection("allUsers")
         .document("${FirebaseAuth.getInstance().currentUser?.uid}").collection("DailyTasks")
 
@@ -133,14 +134,17 @@ object FirebaseCustomManager {
         allTasks.clear()
         docRef.get().addOnSuccessListener { querySnapshot ->
             querySnapshot.documents.forEach { docSnap ->
-                docSnap.data?.let {
-                    allTasks.add(
-                        DailyTasks(
-                            taskName = (it.getValue("timeStamp") as Long).convertLongToDateString(),
-                            timeStamp = it.getValue("timeStamp") as Long,
-                            progress = (it.getValue("totalCompletion") as Long).toInt()
+                docSnap.data?.let {data->
+                    data.getValue("timeStamp")?.let {
+                        allTasks.add(
+                            DailyTasks(
+                                taskName = (it as Long).convertLongToDateString(),
+                                timeStamp = it as Long,
+                                progress = (data.getValue("totalCompletion") as Long).toInt()
+                            )
                         )
-                    )
+                    }
+
                 }
                 counter++
             }
@@ -165,6 +169,26 @@ object FirebaseCustomManager {
 
     private fun updateTasks(tasks: DailyTasks) {
         tasksData[tasks.taskName] = tasks.progress
+    }
+
+    fun passUsersName() {
+        FirebaseFirestore.getInstance().collection("allUsers")
+            .document("${FirebaseAuth.getInstance().currentUser?.uid}")
+            .set(
+                hashMapOf(
+                    "userName" to userName
+                )
+            )
+    }
+
+    fun loadUserName(){
+        FirebaseFirestore.getInstance().collection("allUsers")
+            .document("${FirebaseAuth.getInstance().currentUser?.uid}")
+            .get().addOnSuccessListener {documentSnapshot ->
+                documentSnapshot.get("userName")?.let {
+                    userName = it as String
+                }
+            }
     }
 }
 
