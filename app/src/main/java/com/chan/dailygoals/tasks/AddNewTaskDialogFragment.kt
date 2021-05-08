@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.add_new_task_fragment.*
 import kotlinx.android.synthetic.main.add_new_task_fragment.view.*
 
 
-class AddNewTaskFragment : DialogFragment() {
+class AddNewTaskDialogFragment : DialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -7,6 +7,17 @@
     tools:context=".tasks.TasksFragment">
 
 
+    <TextView
+        android:id="@+id/text_view_no_data"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="NO DATA"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_tasks"
         android:layout_width="0dp"

@@ -1,6 +1,5 @@
 package com.chan.dailygoals.tasks
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.chan.dailygoals.models.DailyTasks
 

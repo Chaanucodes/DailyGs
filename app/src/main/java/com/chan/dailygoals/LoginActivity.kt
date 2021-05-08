@@ -37,9 +37,9 @@ class LoginActivity : AppCompatActivity() {
             buttonLogin.visibility = View.GONE
             loading_text_view.visibility = View.VISIBLE
             FirebaseCustomManager.loadTodaysData()
-            FirebaseCustomManager.loadAllData {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
+            {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
             }
         }
         buttonLogin.setOnClickListener {
@@ -87,17 +87,18 @@ class LoginActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode == REQ_CODE_AUTH){
-            FirebaseCustomManager.passUsersName()
-            FirebaseCustomManager.loadAnalyticsData()
-            FirebaseCustomManager.loadTodaysData()
-            FirebaseCustomManager.loadAllData(
-                ({
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                })
-            )
+        circularProgressBar.visibility = View.VISIBLE
 
+        if(requestCode == REQ_CODE_AUTH){
+            FirebaseCustomManager.passUsersName(true)
+            {
+                circularProgressBar.visibility = View.GONE
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
+//            FirebaseCustomManager.loadAnalyticsData()
+//            FirebaseCustomManager.loadTodaysData()
+//            FirebaseCustomManager.loadAllData()
 
         }
     }

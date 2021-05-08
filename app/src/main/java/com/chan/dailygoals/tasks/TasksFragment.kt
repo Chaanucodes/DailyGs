@@ -1,5 +1,6 @@
 package com.chan.dailygoals.tasks
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,8 +16,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chan.dailygoals.MainActivity
 import com.chan.dailygoals.R
+import com.chan.dailygoals.backgroundNotificationService.TasksService
 import com.chan.dailygoals.convertToDashDate
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
+import com.chan.dailygoals.models.DailyTasks
 import kotlinx.android.synthetic.main.tasks_fragment.*
 
 
@@ -25,7 +28,10 @@ class TasksFragment : Fragment() {
 
     private lateinit var viewModel: TasksViewModel
     private lateinit var mAdapter: TasksListAdapter
-    private lateinit var args: TasksFragmentArgs
+    private var args: TasksFragmentArgs? = null
+    private var date = "date"
+    private var dailyTasks : DailyTasks? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +43,8 @@ class TasksFragment : Fragment() {
                     findNavController().popBackStack()
                 }
             }
+
+
         requireActivity().onBackPressedDispatcher.addCallback(this, callback)
     }
 
@@ -44,8 +52,17 @@ class TasksFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        if(requireArguments().getString("date", "date")!= null){
+            date = requireArguments().getString("date", "date")
+        }
+
         args = TasksFragmentArgs.fromBundle(requireArguments())
-        val vModelFactory = TasksViewModelFactory(args.date)
+        args?.let {
+            date = it.date
+        }
+        dailyTasks = requireArguments().getParcelable<DailyTasks>("taskValue")
+
+        val vModelFactory = TasksViewModelFactory(date)
         viewModel = ViewModelProviders.of(this, vModelFactory).get(TasksViewModel::class.java)
 
         return inflater.inflate(R.layout.tasks_fragment, container, false)
@@ -57,13 +74,19 @@ class TasksFragment : Fragment() {
 
         recycler_view_tasks.layoutManager = LinearLayoutManager(requireContext())
 
+
         //To determine what data to load after fragment initialization
-        if(args.date!= System.currentTimeMillis().convertToDashDate()){
+        if(date == "date"){
+            text_view_no_data.visibility = View.VISIBLE
+            (requireActivity() as AppCompatActivity).stopService(Intent(requireActivity(), TasksService::class.java))
+            return
+        }
+        if(args?.date!= System.currentTimeMillis().convertToDashDate()){
             taskAddbutton.visibility = View.INVISIBLE
-            mAdapter = TasksListAdapter(viewModel.list, false, requireContext())
+            mAdapter = TasksListAdapter(viewModel.list, false, requireActivity())
             mAdapter.notifyDataSetChanged()
         }else{
-            mAdapter = TasksListAdapter(viewModel.list, context = requireContext())
+            mAdapter = TasksListAdapter(viewModel.list, context = requireActivity())
         }
 
         recycler_view_tasks.adapter = mAdapter
@@ -88,6 +111,11 @@ class TasksFragment : Fragment() {
             if(it){
                 mAdapter.updateList(viewModel.list)
                 mAdapter.notifyDataSetChanged()
+                if(dailyTasks!=null){
+                    mAdapter.completeTask(dailyTasks!!)
+                    (requireActivity() as AppCompatActivity).stopService(
+                        Intent(requireActivity(), TasksService::class.java))
+                }
                 viewModel.isDataLoaded.value = false
             }
 
@@ -100,7 +128,7 @@ class TasksFragment : Fragment() {
 //                viewModel.list.forEach { dt->
 //                    if(dt.taskName == )
 //                }
-                Log.i("TASKS_FRAGMANT", "${it.taskName.toLowerCase().capitalize()}")
+//                Log.i("TASKS_FRAGMANT", "${it.taskName!!.toLowerCase().capitalize()}")
                 FirebaseCustomManager.writeTodaysData(it)
                 viewModel.list.add(it)
                 mAdapter.updateList(viewModel.list)
@@ -117,7 +145,7 @@ class TasksFragment : Fragment() {
         transaction?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 
         transaction!!
-            .add(android.R.id.content, AddNewTaskFragment())
+            .add(android.R.id.content, AddNewTaskDialogFragment())
             .addToBackStack(null)
             .commit()
     }
@@ -125,6 +153,7 @@ class TasksFragment : Fragment() {
     override fun onStop() {
         DialogFragmentDataCallback.tempDailyTaskObject.value = null
         (activity as MainActivity).showTab()
+
         super.onStop()
     }
 

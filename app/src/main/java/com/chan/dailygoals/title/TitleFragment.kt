@@ -40,7 +40,6 @@ class TitleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-//        super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(TitleViewModel::class.java)
         viewModel.loadData()
 

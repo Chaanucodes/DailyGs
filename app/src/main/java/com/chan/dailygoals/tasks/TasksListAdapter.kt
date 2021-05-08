@@ -1,6 +1,7 @@
 package com.chan.dailygoals.tasks
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -8,8 +9,10 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.chan.dailygoals.R
+import com.chan.dailygoals.backgroundNotificationService.TasksService
 import com.chan.dailygoals.databinding.TaskItemBinding
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.chan.dailygoals.models.DailyTasks
@@ -29,6 +32,16 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
     }
     override fun getItemCount(): Int {
         return tasks.size
+    }
+
+    fun completeTask(dailyT: DailyTasks){
+        tasks.forEachIndexed { i, dl->
+            if(dl.taskName == dailyT.taskName){
+                tasks[i].progress = 100
+                FirebaseCustomManager.updateProgress(dl.taskName, 100)
+                notifyDataSetChanged()
+            }
+        }
     }
 
     override fun onBindViewHolder(holder: TaskListViewHolder, position: Int) {
@@ -67,19 +80,25 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
                 binding.popupSettingsTaskItem.visibility = View.GONE
             }
             binding.popupSettingsTaskItem.setOnClickListener {
-                showPopUp(binding.popupSettingsTaskItem)
+                showPopUp(binding.popupSettingsTaskItem, item)
             }
             binding.executePendingBindings()
         }
 
-        private fun showPopUp(popupSettingsTaskItem: ImageButton) {
+        private fun showPopUp(popupSettingsTaskItem: ImageButton, dailyT: DailyTasks) {
             val popupMenu = PopupMenu(context, popupSettingsTaskItem)
             popupMenu.inflate(R.menu.popup_task_item_menu)
 
             popupMenu.setOnMenuItemClickListener { item: MenuItem? ->
-                item?.let {
-                    if(it.itemId == R.id.action_delete_task){
+                item?.let {mi->
+                    if(mi.itemId == R.id.action_delete_task){
                         FirebaseCustomManager.deleteTask(binding.titleTaskItem.text.toString())
+                    }else if(mi.itemId == R.id.action_start_task_in_bg){
+                        Intent(context, TasksService::class.java)
+                            .apply {
+                                putExtra("inputExtra", dailyT)
+                                (context as AppCompatActivity).startService(this)
+                            }
                     }
                 }
                 true

@@ -1,6 +1,5 @@
 package com.chan.dailygoals.firecloud
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.chan.dailygoals.convertLongToDateString
@@ -9,9 +8,12 @@ import com.chan.dailygoals.fetchFormattedDate
 import com.chan.dailygoals.getAverage
 import com.chan.dailygoals.models.DailyTasks
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object FirebaseCustomManager {
 
@@ -25,7 +27,7 @@ object FirebaseCustomManager {
     var dataChangeNotifier = MutableLiveData<Boolean>()
     var daysActive : Long = 0
 
-    fun loadTodaysData() {
+    fun loadTodaysData(from : String = "default", startAct: () -> Unit = fun() {}) {
 
         val date = fetchFormattedDate()
         docRef.document("$date")
@@ -35,6 +37,10 @@ object FirebaseCustomManager {
                     todaysAverage =
                         (documentSnapshot.data?.getValue("totalCompletion") as Long).toInt()
                 }
+                if(from=="tasksVModel"){
+                    startAct.invoke()
+                }else
+                loadAllData(startAct)
             }
     }
 
@@ -116,7 +122,8 @@ object FirebaseCustomManager {
             }
     }
 
-    fun loadAnalyticsData(){
+    fun loadAnalyticsData(firstLogin: Boolean = false,
+                          startAct: () -> Unit = fun() {}){
         FirebaseFirestore.getInstance().collection("allUsers")
             .document("${FirebaseAuth.getInstance().currentUser?.uid}")
             .collection("ProfileAnalytics").document("ProfileData")
@@ -124,7 +131,9 @@ object FirebaseCustomManager {
                 documentSnapshot.get("daysActive")?.let {
                     daysActive = it as Long
                 }
-
+                if(firstLogin){
+                    loadTodaysData(startAct = startAct)
+                }
                 Log.i("FIRE_BAE", "$daysActive")
             }
     }
@@ -132,28 +141,37 @@ object FirebaseCustomManager {
     fun loadAllData(startAct: () -> Unit = fun() {}) {
         var counter = 0
         allTasks.clear()
-        docRef.get().addOnSuccessListener { querySnapshot ->
-            querySnapshot.documents.forEach { docSnap ->
-                docSnap.data?.let {data->
-                    data.getValue("timeStamp")?.let {
-                        allTasks.add(
-                            DailyTasks(
-                                taskName = (it as Long).convertLongToDateString(),
-                                timeStamp = it as Long,
-                                progress = (data.getValue("totalCompletion") as Long).toInt()
+        CoroutineScope(Dispatchers.IO).launch {
+            docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
+                .get().addOnSuccessListener { querySnapshot ->
+                querySnapshot.documents.forEach { docSnap ->
+                    docSnap.data?.let {data->
+                        data.getValue("timeStamp")?.let {
+                            allTasks.add(
+                                DailyTasks(
+                                    taskName = (it as Long).convertLongToDateString(),
+                                    timeStamp = it,
+                                    progress = (data.getValue("totalCompletion") as Long).toInt()
+                                )
                             )
-                        )
+                            Log.i("TAG_ALL_TASKS", (it as Long).convertLongToDateString())
+                        }
+                        Log.i("TAG_ALL_TASKS","here")
                     }
-
+                    Log.i("TAG_ALL_TASKS","There")
+                    counter++
                 }
-                counter++
+                if(counter!= daysActive.toInt()){
+                    daysActive = counter.toLong()
+                    updateDaysActive()
+                }
+                startAct.invoke()
             }
-            if(counter!= daysActive.toInt()){
-                daysActive = counter.toLong()
-                updateDaysActive()
-            }
-            startAct.invoke()
+                .addOnFailureListener{
+                    Log.e("TAG_ALL_TASKS", it.toString())
+                }
         }
+
     }
 
     private fun updateDaysActive() {
@@ -171,14 +189,19 @@ object FirebaseCustomManager {
         tasksData[tasks.taskName] = tasks.progress
     }
 
-    fun passUsersName() {
+    fun passUsersName(firstLogin: Boolean = false,
+                      startAct: () -> Unit = fun() {}) {
         FirebaseFirestore.getInstance().collection("allUsers")
             .document("${FirebaseAuth.getInstance().currentUser?.uid}")
             .set(
                 hashMapOf(
                     "userName" to userName
                 )
-            )
+            ).addOnSuccessListener {
+                if(firstLogin)
+                    loadAnalyticsData(firstLogin,
+                    startAct)
+            }
     }
 
     fun loadUserName(){
