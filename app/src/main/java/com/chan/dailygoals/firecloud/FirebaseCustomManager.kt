@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 object FirebaseCustomManager {
 
     var userName: String = ""
-    val docRef = FirebaseFirestore.getInstance().collection("allUsers")
+    var docRef = FirebaseFirestore.getInstance().collection("allUsers")
         .document("${FirebaseAuth.getInstance().currentUser?.uid}").collection("DailyTasks")
 
     var tasksData: MutableMap<String, Int> = hashMapOf()
@@ -141,6 +141,7 @@ object FirebaseCustomManager {
     fun loadAllData(startAct: () -> Unit = fun() {}) {
         var counter = 0
         allTasks.clear()
+        checkDocRefNullability()
         CoroutineScope(Dispatchers.IO).launch {
             docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
                 .get().addOnSuccessListener { querySnapshot ->
@@ -172,6 +173,14 @@ object FirebaseCustomManager {
                 }
         }
 
+    }
+
+    private fun checkDocRefNullability() {
+        if(docRef.path.contains("null")){
+            docRef =FirebaseFirestore.getInstance().collection("allUsers")
+                .document("${FirebaseAuth.getInstance().currentUser?.uid}")
+                .collection("DailyTasks")
+        }
     }
 
     private fun updateDaysActive() {

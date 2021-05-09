@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.core.text.isDigitsOnly
+import com.chan.dailygoals.Constantes.REQ_CODE_AUTH
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -19,7 +20,7 @@ import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
 
-    private val REQ_CODE_AUTH = 2002
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

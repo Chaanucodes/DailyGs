@@ -48,6 +48,9 @@ class TitleFragment : Fragment() {
         mAdapter = TitleAdapter(viewModel.list){
             navController.navigate(TitleFragmentDirections.actionTitleFragmentToTasksFragment(it))
         }
+
+
+
         title_recycle_view.layoutManager = LinearLayoutManager(requireContext())
         title_recycle_view.adapter = mAdapter
         mAdapter.notifyDataSetChanged()

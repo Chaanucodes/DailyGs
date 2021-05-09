@@ -19,7 +19,7 @@ class TitleViewModel() : ViewModel() {
 
             FirebaseCustomManager.allTasks.forEach {
                 list.add(DailyTasks(it.taskName, it.progress, it.timeStamp))
-                listReady.value = true
             }
+        listReady.value = true
     }
 }
