@@ -11,6 +11,8 @@
         <item name="android:itemBackground">@color/colorPrimary</item>
 
         <item name="android:textColor">@color/white</item>
+
+        <item name="snackbarTextViewStyle"> @color/white</item>
     </style>
 
 

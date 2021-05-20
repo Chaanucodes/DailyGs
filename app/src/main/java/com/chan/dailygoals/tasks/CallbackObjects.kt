@@ -11,3 +11,7 @@ object DialogFragmentDataCallback {
         tempDailyTaskObject.value = DailyTasks(name, progress)
     }
 }
+
+object LoadingBarCallback{
+    var isLoading = MutableLiveData<Boolean>()
+}

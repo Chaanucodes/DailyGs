@@ -16,19 +16,26 @@ import com.chan.dailygoals.backgroundNotificationService.TasksService
 import com.chan.dailygoals.databinding.TaskItemBinding
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.chan.dailygoals.models.DailyTasks
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TasksListAdapter(private var tasks: List<DailyTasks>,
                        private var isMutable: Boolean = true,
-                       private val context: Context
+                       private val context: Context,
+                       private val dayDeletionCase : ()->Unit
 ) : RecyclerView.Adapter<TasksListAdapter.TaskListViewHolder>(){
 
+    var totalTasks = 0
+    var tasksCompleted = 0
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskListViewHolder {
-        return TaskListViewHolder.from(parent, context)
+        return TaskListViewHolder.from(parent, context, dayDeletionCase)
     }
 
     fun updateList(list : List<DailyTasks>){
         tasks = list
-        notifyDataSetChanged()
+        notifyAboutChanges()
     }
     override fun getItemCount(): Int {
         return tasks.size
@@ -39,9 +46,23 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
             if(dl.taskName == dailyT.taskName){
                 tasks[i].progress = 100
                 FirebaseCustomManager.updateProgress(dl.taskName, 100)
-                notifyDataSetChanged()
+                notifyAboutChanges()
             }
         }
+    }
+
+    fun notifyAboutChanges(){
+        notifyDataSetChanged()
+
+        tasksCompleted = 0
+
+            tasks.forEach { dt->
+                if(dt.progress == 100)
+                    tasksCompleted++
+            }
+            totalTasks = tasks.size
+
+
     }
 
     override fun onBindViewHolder(holder: TaskListViewHolder, position: Int) {
@@ -49,15 +70,18 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
         holder.bind(item, isMutable)
     }
 
-    class TaskListViewHolder private constructor(private val binding: TaskItemBinding,
-    private val context: Context) : RecyclerView.ViewHolder(binding.root){
+    class TaskListViewHolder private constructor(
+        private val binding: TaskItemBinding,
+        private val context: Context,
+     val dayDeletionCase: () -> Unit) : RecyclerView.ViewHolder(binding.root){
+
         companion object{
-            fun from(parent: ViewGroup, context: Context) : TaskListViewHolder{
+            fun from(parent: ViewGroup, context: Context, dayDeletionCase: () -> Unit) : TaskListViewHolder{
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = TaskItemBinding.inflate(layoutInflater, parent, false)
                 binding.seekbarTaskItem.setOnSeekBarChangeListener(object  : SeekBar.OnSeekBarChangeListener{
                     override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                        binding.percentageTaskItem.setText("$p1%")
+                        binding.percentageTaskItem.text = "$p1%"
                     }
 
                     override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -67,7 +91,7 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
                         FirebaseCustomManager.updateProgress(binding.titleTaskItem.text, p0!!.progress)
                     }
                 })
-                return TaskListViewHolder(binding, context)
+                return TaskListViewHolder(binding, context, dayDeletionCase)
             }
 
 
@@ -92,7 +116,11 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
             popupMenu.setOnMenuItemClickListener { item: MenuItem? ->
                 item?.let {mi->
                     if(mi.itemId == R.id.action_delete_task){
-                        FirebaseCustomManager.deleteTask(binding.titleTaskItem.text.toString())
+                        LoadingBarCallback.isLoading.value = true
+                        FirebaseCustomManager.deleteTask(binding.titleTaskItem.text.toString()){
+                            dayDeletionCase()
+                            LoadingBarCallback.isLoading.value = false
+                        }
                     }else if(mi.itemId == R.id.action_start_task_in_bg){
                         Intent(context, TasksService::class.java)
                             .apply {
@@ -105,7 +133,6 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
             }
             popupMenu.show()
         }
-
-
     }
+
 }

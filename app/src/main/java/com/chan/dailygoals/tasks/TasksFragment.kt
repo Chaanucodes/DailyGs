@@ -1,12 +1,16 @@
 package com.chan.dailygoals.tasks
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -18,8 +22,11 @@ import com.chan.dailygoals.MainActivity
 import com.chan.dailygoals.R
 import com.chan.dailygoals.backgroundNotificationService.TasksService
 import com.chan.dailygoals.convertToDashDate
+import com.chan.dailygoals.fetchFormattedDate
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.chan.dailygoals.models.DailyTasks
+import com.chan.dailygoals.tasks.exploreCategories.ExploreTasksActivity
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.tasks_fragment.*
 
 
@@ -32,10 +39,25 @@ class TasksFragment : Fragment() {
     private var date = "date"
     private var dailyTasks : DailyTasks? = null
 
+    private val startForResult = this.registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val intent = result.data
+            handleReceivedData(intent)
+        }
+    }
+
+    private fun handleReceivedData(intent: Intent?) {
+        intent?.let {
+            val s = it.getStringExtra("taskName")
+            Toast.makeText(activity, s, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setHasOptionsMenu(true)
         //THIS IS TO ADD A CUSTOM FUNCTIONALITY TO BACK BUTTON ONLY FOR THIS FRAGMENT
         val callback: OnBackPressedCallback =
             object : OnBackPressedCallback(true /* enabled by default */) {
@@ -52,9 +74,6 @@ class TasksFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        if(requireArguments().getString("date", "date")!= null){
-            date = requireArguments().getString("date", "date")
-        }
 
         args = TasksFragmentArgs.fromBundle(requireArguments())
         args?.let {
@@ -78,18 +97,33 @@ class TasksFragment : Fragment() {
         //To determine what data to load after fragment initialization
         if(date == "date"){
             text_view_no_data.visibility = View.VISIBLE
-            (requireActivity() as AppCompatActivity).stopService(Intent(requireActivity(), TasksService::class.java))
+            (requireActivity() as AppCompatActivity).stopService(
+                Intent(
+                    requireActivity(),
+                    TasksService::class.java
+                )
+            )
             return
         }
+
+        //Checking if the task opened is of current date or not
         if(args?.date!= System.currentTimeMillis().convertToDashDate()){
             taskAddbutton.visibility = View.INVISIBLE
-            mAdapter = TasksListAdapter(viewModel.list, false, requireActivity())
-            mAdapter.notifyDataSetChanged()
+            mAdapter = TasksListAdapter(viewModel.list, false, requireActivity()){
+                findNavController().popBackStack()
+            }
+            mAdapter.notifyAboutChanges()
         }else{
-            mAdapter = TasksListAdapter(viewModel.list, context = requireActivity())
+            mAdapter = TasksListAdapter(viewModel.list, context = requireActivity()){
+                findNavController().popBackStack()
+            }
         }
 
         recycler_view_tasks.adapter = mAdapter
+
+        exploreButton.setOnClickListener {
+                startForResult.launch(Intent(requireActivity(), ExploreTasksActivity::class.java))
+        }
 
         taskAddbutton.setOnClickListener {
             callAddNewTaskFragment()
@@ -100,21 +134,31 @@ class TasksFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+
+
         FirebaseCustomManager.dataChangeNotifier.observe(viewLifecycleOwner, Observer {
-            if(it){
+            if (it) {
                 viewModel.loadThisDayData()
                 FirebaseCustomManager.dataChangeNotifier.value = false
+                LoadingBarCallback.isLoading.value = false
             }
         })
 
         viewModel.isDataLoaded.observe(viewLifecycleOwner, Observer {
-            if(it){
+            if (it) {
                 mAdapter.updateList(viewModel.list)
-                mAdapter.notifyDataSetChanged()
-                if(dailyTasks!=null){
+                mAdapter.notifyAboutChanges()
+                if (dailyTasks != null) {
                     mAdapter.completeTask(dailyTasks!!)
+                    Toast.makeText(
+                        context,
+                        "You completed ${dailyTasks!!.taskName}.",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
                     (requireActivity() as AppCompatActivity).stopService(
-                        Intent(requireActivity(), TasksService::class.java))
+                        Intent(requireActivity(), TasksService::class.java)
+                    )
                 }
                 viewModel.isDataLoaded.value = false
             }
@@ -124,18 +168,20 @@ class TasksFragment : Fragment() {
 
         //Getting data from New Dialog Fragment
         DialogFragmentDataCallback.tempDailyTaskObject.observe(viewLifecycleOwner, Observer {
-            if(it!=null && it.taskName!= ""){
-//                viewModel.list.forEach { dt->
-//                    if(dt.taskName == )
-//                }
-//                Log.i("TASKS_FRAGMANT", "${it.taskName!!.toLowerCase().capitalize()}")
+            if (it != null && it.taskName != "") {
+//                hideSoftKeyboard(view)
                 FirebaseCustomManager.writeTodaysData(it)
                 viewModel.list.add(it)
                 mAdapter.updateList(viewModel.list)
                 Log.i("TAKS_FRAGMENT", "${viewModel.list}")
-                mAdapter.notifyDataSetChanged()
+                mAdapter.notifyAboutChanges()
+                LoadingBarCallback.isLoading.value = false
+            } else if(it != null && it.taskName == ""){
+                LoadingBarCallback.isLoading.value = false
+                Toast.makeText(activity, "Enter some data", Toast.LENGTH_SHORT).show()
             }
         })
+
     }
 
     private fun callAddNewTaskFragment(){
@@ -145,22 +191,45 @@ class TasksFragment : Fragment() {
         transaction?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 
         transaction!!
-            .add(android.R.id.content, AddNewTaskDialogFragment())
+            .add(android.R.id.content, AddNewTaskDialogFragment(){
+                hideSoftKeyboard(it)
+            })
             .addToBackStack(null)
             .commit()
     }
 
     override fun onStop() {
         DialogFragmentDataCallback.tempDailyTaskObject.value = null
+        (activity as MainActivity).pager.isUserInputEnabled = true
         (activity as MainActivity).showTab()
+
+        if(args?.date== fetchFormattedDate()){
+            FirebaseCustomManager.updateDailyAnalytics(
+                mAdapter.tasksCompleted,
+                mAdapter.totalTasks,
+                mAdapter.totalTasks - mAdapter.tasksCompleted
+            )
+        }
 
         super.onStop()
     }
 
     override fun onResume() {
         (activity as MainActivity).hideTab()
-        (requireActivity() as AppCompatActivity). supportActionBar?.title = "Activities"
+        (activity as MainActivity).pager.isUserInputEnabled = false
+        (requireActivity() as AppCompatActivity).supportActionBar?.title = "Activities"
         super.onResume()
+    }
+
+    private fun hideSoftKeyboard(view: View) {
+        val imm =
+            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item: MenuItem = menu.findItem(R.id.action_settings)
+        item.isVisible = false
     }
 
 }

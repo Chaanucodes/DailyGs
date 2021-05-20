@@ -1,21 +1,24 @@
 package com.chan.dailygoals.title
 
+import android.content.Intent
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.findNavController
+import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.chan.dailygoals.MainActivity
 import com.chan.dailygoals.R
 import com.chan.dailygoals.convertToDashDate
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
+import com.chan.dailygoals.settings.SettingsActivity
 import com.chan.dailygoals.tasks.TasksListAdapter
 import kotlinx.android.synthetic.main.title_fragment.*
 
@@ -56,8 +59,11 @@ class TitleFragment : Fragment() {
         mAdapter.notifyDataSetChanged()
 
         viewModel.listReady.observe(viewLifecycleOwner, Observer {
-            if (it) mAdapter.updateList(viewModel.list)
-            mAdapter.notifyDataSetChanged()
+            if (it){
+                mAdapter.updateList(viewModel.list)
+                mAdapter.notifyDataSetChanged()
+            }
+
         })
 
         Log.i("TAGGING_TITLE", "${FirebaseCustomManager.allTasks}")
@@ -65,13 +71,18 @@ class TitleFragment : Fragment() {
             navController.navigate(TitleFragmentDirections.actionTitleFragmentToTasksFragment(
                 System.currentTimeMillis().convertToDashDate()))
         }
+
+//        setHasOptionsMenu(true)
     }
 
+    // Inflating menu
     override fun onResume() {
         (requireActivity() as AppCompatActivity). supportActionBar?.title =
             "Welcome, ${FirebaseCustomManager.userName}"
         super.onResume()
     }
+
+
 
 
 }

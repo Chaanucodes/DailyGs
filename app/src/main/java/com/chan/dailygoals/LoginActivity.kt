@@ -2,12 +2,14 @@ package com.chan.dailygoals
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.text.isDigitsOnly
 import com.chan.dailygoals.Constantes.REQ_CODE_AUTH
@@ -49,6 +51,7 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }else{
                 FirebaseCustomManager.userName = edit_name_login.text.toString()
+                hideSoftKeyboard(it)
                 logon()
             }
 
@@ -89,11 +92,15 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         circularProgressBar.visibility = View.VISIBLE
+        buttonLogin.visibility = View.GONE
+        edit_name_login.visibility = View.GONE
 
         if(requestCode == REQ_CODE_AUTH){
             FirebaseCustomManager.passUsersName(true)
             {
                 circularProgressBar.visibility = View.GONE
+                buttonLogin.visibility = View.VISIBLE
+                edit_name_login.visibility = View.VISIBLE
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
@@ -102,5 +109,11 @@ class LoginActivity : AppCompatActivity() {
 //            FirebaseCustomManager.loadAllData()
 
         }
+    }
+
+    fun hideSoftKeyboard(view : View) {
+        val imm =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }

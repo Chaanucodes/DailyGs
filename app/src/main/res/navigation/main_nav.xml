@@ -12,6 +12,10 @@
         <action
             android:id="@+id/action_titleFragment_to_tasksFragment"
             app:destination="@id/tasksFragment"
+            app:enterAnim="@anim/from_top_to_mid"
+            app:exitAnim="@anim/from_mid_to_top"
+            app:popEnterAnim="@anim/from_very_top_to_mid"
+            app:popExitAnim="@anim/from_perfect_mid_to_top"
             app:popUpTo="@id/titleFragment" />
     </fragment>
     <fragment
@@ -29,4 +33,5 @@
         android:name="com.chan.dailygoals.userData.UserStatsFragment"
         android:label="fragment_user_stats"
         tools:layout="@layout/fragment_user_stats" />
+
 </navigation>

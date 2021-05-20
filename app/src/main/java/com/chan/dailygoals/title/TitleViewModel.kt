@@ -16,10 +16,15 @@ class TitleViewModel() : ViewModel() {
 
     fun loadData(){
         list.clear()
-
             FirebaseCustomManager.allTasks.forEach {
                 list.add(DailyTasks(it.taskName, it.progress, it.timeStamp))
             }
         listReady.value = true
+    }
+
+    override fun onCleared() {
+        list.clear()
+        listReady.value = false
+        super.onCleared()
     }
 }

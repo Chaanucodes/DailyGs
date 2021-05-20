@@ -1,23 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="vModel"
             type="com.chan.dailygoals.userData.UserStatsViewModel" />
+
+        <variable
+            name="constant"
+            type="com.chan.dailygoals.Constantes" />
     </data>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:padding="8dp"
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/refresh_layout_user_stats_fragment"
+
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".userData.UserStatsFragment">
+        android:layout_height="match_parent">
 
-        <TextView
+        <ScrollView
+            android:background="@drawable/bg_app_gradient"
+            android:id="@+id/scroll_view_fragment_user_stats"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            app:addAveragePrefix="@{vModel.totalDays}"/>
+            android:layout_height="match_parent">
 
-    </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_user_stats"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="8dp"
+                tools:context=".userData.UserStatsFragment">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    app:prefix="@{constant.TOTAL_DAYS_ACTIVE}"
+                    app:total="@{vModel.totalDays}" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    app:prefix="@{constant.TOTAL_TASKS_COMPLETED}"
+                    app:total="@{vModel.totalCompletedTasksToday}" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    app:prefix="@{constant.TOTAL_TASKS_TODAY}"
+                    app:total="@{vModel.totalTasksToday}" />
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    app:prefix="@{constant.ALL_TIME_COMPLETED_TASKS}"
+                    app:total="@{vModel.allTimeCompletedTasks}" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    app:prefix="@{constant.ALL_TIME_TASKS}"
+                    app:total="@{vModel.allTimeTasks}" />
+
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/pieChartDailyRecord"
+                    android:minHeight="@dimen/pie_chart_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/pieChartAllTimeRecord"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="@dimen/pie_chart_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </layout>

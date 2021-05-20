@@ -3,9 +3,7 @@ package com.chan.dailygoals
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
 import android.os.Build
-import android.util.Log
 import com.chan.dailygoals.Constantes.CHANNEL_ID
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.google.firebase.auth.FirebaseAuth
@@ -15,7 +13,7 @@ class MainApplication : Application() {
     override fun onCreate() {
         if (FirebaseAuth.getInstance().currentUser!=null)
             FirebaseCustomManager.loadUserName()
-            FirebaseCustomManager.loadAnalyticsData()
+            FirebaseCustomManager.loadDaysActive()
 
         createNotificationChannel()
 
