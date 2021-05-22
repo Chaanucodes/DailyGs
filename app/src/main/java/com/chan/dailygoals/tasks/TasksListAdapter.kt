@@ -23,8 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class TasksListAdapter(private var tasks: List<DailyTasks>,
-                       private var isMutable: Boolean = true,
+class TasksListAdapter(private var isMutable: Boolean = true,
                        private val context: Context,
                        private val dayDeletionCase : ()->Unit
 ) : ListAdapter<DailyTasks, TasksListAdapter.TaskListViewHolder>(TasksDiffCall){
@@ -36,10 +35,7 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
         return TaskListViewHolder.from(parent, context, dayDeletionCase)
     }
 
-    fun updateList(list : List<DailyTasks>){
-        tasks = list
-        notifyAboutChanges()
-    }
+
 //    override fun getItemCount(): Int {
 //        return tasks.size
 //    }
@@ -54,16 +50,30 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
         }
     }
 
+    fun updateTask(dailyT: DailyTasks){
+        currentList.forEachIndexed { i, dl->
+            if(dl.taskName == dailyT.taskName){
+                currentList[i].progress = dailyT.progress
+                notifyAboutChanges()
+            }
+        }
+    }
+
+
     fun notifyAboutChanges(){
 //        notifyDataSetChanged()
 
         tasksCompleted = 0
+        totalTasks = 0
 
-        currentList.forEach { dt->
+        currentList?.let{
+            currentList.forEach { dt->
             if(dt.progress == 100)
                 tasksCompleted++
         }
-        totalTasks = currentList.size
+            totalTasks = currentList.size
+        }
+
 
     }
 
@@ -90,6 +100,11 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
                     }
 
                     override fun onStopTrackingTouch(p0: SeekBar?) {
+                        UpdateProgressCallback.isProgressUpdated.value = Triple(
+                            binding.titleTaskItem.text.toString(),
+                            p0!!.progress,
+                            true
+                        )
                         FirebaseCustomManager.updateProgress(binding.titleTaskItem.text, p0!!.progress)
                     }
                 })

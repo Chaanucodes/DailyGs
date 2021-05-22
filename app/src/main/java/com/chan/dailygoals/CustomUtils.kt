@@ -1,18 +1,24 @@
 package com.chan.dailygoals
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Typeface
 import android.text.format.DateFormat
 import android.view.View
 import android.widget.ScrollView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
+import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.IFillFormatter
+import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.utils.EntryXComparator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.File
@@ -53,7 +59,7 @@ fun Long.convertToDashDate() : String{
 }
 
 fun checkDocRefNullability() {
-    if(FirebaseCustomManager.docRef.path.contains("null")){
+    if(FirebaseCustomManager.docRef.path.contains("null") ){
         FirebaseCustomManager.docRef = FirebaseFirestore.getInstance().collection("allUsers")
             .document("${FirebaseAuth.getInstance().currentUser?.uid}")
             .collection("DailyTasks")
@@ -139,7 +145,6 @@ fun setDailyPieView(
     }
 }
 
-fun setLineCharWeekly(){
 
-}
+
 

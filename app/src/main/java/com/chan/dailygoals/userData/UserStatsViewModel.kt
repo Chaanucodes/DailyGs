@@ -30,8 +30,8 @@ class UserStatsViewModel : ViewModel() {
     val allTimeCompletedTasks: LiveData<Int>
         get() = _allTimeCompletedTasks
 
-    private var _weeklyChart = MutableLiveData<HashMap<String, Int>>()
-    val weeklyChart: LiveData<HashMap<String, Int>>
+    private var _weeklyChart = MutableLiveData<HashMap<Float, Float>>()
+    val weeklyChart: LiveData<HashMap<Float, Float>>
         get() = _weeklyChart
 
     init {
@@ -51,26 +51,30 @@ class UserStatsViewModel : ViewModel() {
         _totalTasksToday.value = FirebaseCustomManager.totalTasksToday
         _allTimeCompletedTasks.value = FirebaseCustomManager.allTimeCompletedTasks
         _allTimeTasks.value = FirebaseCustomManager.allTimeTasks
-//        loadWeeklyData()
+        loadWeeklyData()
         LoadingBarCallback.isLoading.value = false
     }
 
     private fun loadWeeklyData() {
         if (FirebaseCustomManager.allTasks.isNotEmpty()) {
             var dateCounter = 0
-            var value = 0
-            val hashMap = HashMap<String, Int>()
+            var value = 0f
+            var tempData = 0f
+            val hashMap = HashMap<Float, Float>()
             for (i in 0..6) {
                 if (FirebaseCustomManager.allTasks[dateCounter].documentDate.equals(
                         (System.currentTimeMillis() - (86400000L * i)).convertToDashDate(), true
                     )
                 ) {
-                    value = FirebaseCustomManager.allTasks[dateCounter].progress
+                    value = FirebaseCustomManager.allTasks[dateCounter].progress.toFloat()
                     if(FirebaseCustomManager.allTasks.size-1>dateCounter)
                     dateCounter++
                 }
-                hashMap[(System.currentTimeMillis() - (86400000L * i)).convertToDashDate()] = value
-                value = 0
+                (System.currentTimeMillis() - (86400000L * i)).convertToDashDate().split("-").apply {
+                    tempData = (this[0] + "." +this[1]).toFloat()
+                }
+                hashMap[tempData] = value
+                value = 0f
             }
             _weeklyChart.value = hashMap
         }

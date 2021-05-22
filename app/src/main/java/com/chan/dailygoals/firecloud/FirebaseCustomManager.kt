@@ -37,11 +37,16 @@ object FirebaseCustomManager {
         docRef.document(date)
             .get().addOnSuccessListener { documentSnapshot ->
                 documentSnapshot.data?.let {
-                    (it.getValue("dailyTasks") as MutableMap<String, Long>).forEach { map ->
-                        tasksData[map.key] = map.value.toInt()
-                    }
-                    todaysAverage =
-                        (documentSnapshot.data?.getValue("totalCompletion") as Long).toInt()
+                    try{
+                        (it.getValue("dailyTasks") as MutableMap<String, Long>?)?.let { dt->
+                            dt.forEach { map ->
+                                tasksData[map.key] = map.value.toInt()
+                            }
+                        }
+                        (documentSnapshot.data?.getValue("totalCompletion") as Long?)?.let {tc->
+                            todaysAverage = tc.toInt()
+                        }
+                    }catch (e : NoSuchElementException){}
                 }
                 if (from == "tasksVModel") {
                     startAct.invoke()
@@ -71,7 +76,17 @@ object FirebaseCustomManager {
                     "timeStamp" to task.timeStamp,
                 )
             ).addOnSuccessListener {
-                if (allTasks[0].documentDate != date) {
+                if (allTasks.isNullOrEmpty() || allTasks[0].documentDate != date) {
+                    profileRef.update(
+                        "totalTasksToday", FieldValue.increment(1)
+                    ).addOnSuccessListener {
+                        if(task.progress == 100) {
+                            profileRef.update(
+                                "tasksCompletedToday", FieldValue.increment(1)
+                            )
+                        }
+                        dateUpdateAndLoadAllData()
+                    }
                     updateDaysActive()
                     val timeS = System.currentTimeMillis()
                     allTasks.add(
@@ -84,17 +99,22 @@ object FirebaseCustomManager {
                         )
                     )
 
+                }else{
+                    dateUpdateAndLoadAllData()
                 }
-                docRef.document("$date")
-                    .set(
-                        hashMapOf(
-                            "documentDate" to date
-                        ),
-                        SetOptions.merge()
-                    )
-                loadAllData()
 
             }
+    }
+
+    private fun dateUpdateAndLoadAllData(){
+        docRef.document(fetchFormattedDate())
+            .set(
+                hashMapOf(
+                    "documentDate" to fetchFormattedDate()
+                ),
+                SetOptions.merge()
+            )
+        loadAllData()
     }
 
     fun deleteTask(data: String, forAllEntryDeletion: () -> Unit) {
@@ -123,7 +143,7 @@ object FirebaseCustomManager {
                             "tasksCompletedToday", FieldValue.increment(-1)
                         )
                     }
-                    if (tasksData.isEmpty()) {
+                    if (tasksData.isNullOrEmpty()) {
                         deleteDayEntry(forAllEntryDeletion)
                     } else {
                         loadAllData()
@@ -215,7 +235,10 @@ object FirebaseCustomManager {
                                         "totalTasksToday" to 0,
                                         "tasksCompletedToday" to 0
                                     ) as Map<String, Any>
-                                )
+                                ).addOnSuccessListener {
+                                    totalCompletedTasksToday = 0
+                                    totalTasksToday = 0
+                                }
                             }
                     }
                 }
@@ -235,18 +258,18 @@ object FirebaseCustomManager {
 
     fun updateDailyAnalytics(tasksCompleted: Int, totalTasks: Int, incompleteTasks: Int) {
         docRef.document(fetchFormattedDate())
-            .update(
+            .set(
                 hashMapOf(
                     "tasksCompleted" to tasksCompleted,
                     "totalTasks" to totalTasks,
                     "incompleteTasks" to incompleteTasks
-                ) as Map<String, Any>
+                ) as Map<String, Any>, SetOptions.merge()
             ).addOnSuccessListener {
-                profileRef.update(
+                profileRef.set(
                     hashMapOf(
                         "totalTasksToday" to totalTasks,
                         "tasksCompletedToday" to tasksCompleted
-                    ) as Map<String, Any>
+                    ) as Map<String, Any>, SetOptions.merge()
                 ).addOnSuccessListener {
                     totalCompletedTasksToday = tasksCompleted
                     totalTasksToday = totalTasks
@@ -271,9 +294,10 @@ object FirebaseCustomManager {
         }
 
 
-
         ref.get().addOnSuccessListener { docSnaphot ->
+            if(initialPoint == 0)
             allTasks.clear()
+
             docSnaphot.documents.forEachIndexed { i, docSnap ->
                 docSnap.data?.let { data ->
                     data.getValue("timeStamp")?.let {
@@ -302,6 +326,7 @@ object FirebaseCustomManager {
     }
 
     private fun setNewUserData() {
+        daysActive = 0
         profileRef
             .set(
                 hashMapOf(
@@ -381,8 +406,8 @@ object FirebaseCustomManager {
 
     fun clearAll(logout: () -> Unit) {
         userName = ""
-        docRef = FirebaseFirestore.getInstance().collection("allUsers")
-        profileRef = FirebaseFirestore.getInstance().collection("allUsers").document("DailyTasks")
+        docRef = FirebaseFirestore.getInstance().collection("null")
+        profileRef = FirebaseFirestore.getInstance().collection("null").document("null")
         tasksData = hashMapOf()
         todaysAverage = 0
         allTasks = mutableListOf()

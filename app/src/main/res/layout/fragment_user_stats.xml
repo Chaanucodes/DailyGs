@@ -21,10 +21,10 @@
         android:layout_height="match_parent">
 
         <ScrollView
-            android:background="@drawable/bg_app_gradient"
             android:id="@+id/scroll_view_fragment_user_stats"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_app_gradient">
 
 
             <LinearLayout
@@ -35,58 +35,121 @@
                 android:padding="8dp"
                 tools:context=".userData.UserStatsFragment">
 
-                <TextView
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    app:prefix="@{constant.TOTAL_DAYS_ACTIVE}"
-                    app:total="@{vModel.totalDays}" />
+                    android:layout_marginTop="@dimen/standard_button_margin"
+                    android:orientation="horizontal">
 
-                <TextView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsLabelTextView"
+                        android:text="@{String.valueOf(constant.TOTAL_DAYS_ACTIVE)}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsDataTextView"
+                        android:text="@{String.valueOf(vModel.totalDays)}" />
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    app:prefix="@{constant.TOTAL_TASKS_COMPLETED}"
-                    app:total="@{vModel.totalCompletedTasksToday}" />
+                    android:layout_marginTop="@dimen/standard_button_margin"
+                    android:orientation="horizontal">
 
-                <TextView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsLabelTextView"
+                        android:text="@{String.valueOf(constant.TOTAL_TASKS_COMPLETED)}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsDataTextView"
+                        android:text="@{String.valueOf(vModel.totalCompletedTasksToday)}"/>
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    app:prefix="@{constant.TOTAL_TASKS_TODAY}"
-                    app:total="@{vModel.totalTasksToday}" />
+                    android:layout_marginTop="@dimen/standard_button_margin"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsLabelTextView"
+                        android:text="@{String.valueOf(constant.TOTAL_TASKS_TODAY)}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsDataTextView"
+                        android:text="@{String.valueOf(vModel.totalTasksToday)}" />
+                </RelativeLayout>
 
 
-                <TextView
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    app:prefix="@{constant.ALL_TIME_COMPLETED_TASKS}"
-                    app:total="@{vModel.allTimeCompletedTasks}" />
+                    android:layout_marginTop="@dimen/standard_button_margin"
+                    android:orientation="horizontal">
 
-                <TextView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsLabelTextView"
+                        android:text="@{String.valueOf(constant.ALL_TIME_COMPLETED_TASKS)}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsDataTextView"
+                        android:text="@{String.valueOf(vModel.allTimeCompletedTasks)}" />
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    app:prefix="@{constant.ALL_TIME_TASKS}"
-                    app:total="@{vModel.allTimeTasks}" />
+                    android:layout_marginTop="@dimen/standard_button_margin"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsLabelTextView"
+                        android:text="@{String.valueOf(constant.ALL_TIME_TASKS)}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/UserStatsDataTextView"
+                        android:text="@{String.valueOf(vModel.allTimeTasks)}" />
+                </RelativeLayout>
 
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pieChartDailyRecord"
-                    android:minHeight="@dimen/pie_chart_height"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:minHeight="@dimen/pie_chart_height" />
 
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pieChartAllTimeRecord"
-                    android:layout_marginTop="16dp"
-                    android:minHeight="@dimen/pie_chart_height"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="@dimen/pie_chart_height" />
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/lineChartWeeklyTimeRecord"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="280dp"/>
 
 
             </LinearLayout>

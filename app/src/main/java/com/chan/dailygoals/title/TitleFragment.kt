@@ -71,18 +71,13 @@ class TitleFragment : Fragment() {
             navController.navigate(TitleFragmentDirections.actionTitleFragmentToTasksFragment(
                 System.currentTimeMillis().convertToDashDate()))
         }
-
 //        setHasOptionsMenu(true)
     }
 
-    // Inflating menu
     override fun onResume() {
         (requireActivity() as AppCompatActivity). supportActionBar?.title =
             "Welcome, ${FirebaseCustomManager.userName}"
         super.onResume()
     }
-
-
-
 
 }

@@ -8,6 +8,7 @@ import android.widget.ExpandableListAdapter
 import android.widget.ExpandableListView
 import androidx.appcompat.app.AppCompatActivity
 import com.chan.dailygoals.R
+import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import kotlinx.android.synthetic.main.activity_explore_tasks.*
 
 
@@ -43,11 +44,17 @@ class ExploreTasksActivity : AppCompatActivity() {
 
         categoriesList.setOnChildClickListener {  parent: ExpandableListView, v: View, groupPosition: Int, childPosition: Int, id: Long ->
 
+            val taskName  = (expandableListDetail[expandableListTitle[groupPosition]]?.get(
+            childPosition))
 
             val resultIntent = Intent()
 
-            resultIntent.putExtra("taskName",(expandableListDetail[expandableListTitle[groupPosition]]?.get(
-                childPosition)))
+            if(FirebaseCustomManager.tasksData.containsKey(taskName)){
+                resultIntent.putExtra("alreadyExists",true)
+            }else{
+                resultIntent.putExtra("taskName",taskName)
+            }
+
             setResult(RESULT_OK, resultIntent)
             finish()
 

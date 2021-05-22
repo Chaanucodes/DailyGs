@@ -38,10 +38,11 @@ class TasksFragment : Fragment() {
     private lateinit var mAdapter: TasksListAdapter
     private var args: TasksFragmentArgs? = null
     private var date = "date"
-    private var dailyTasks : DailyTasks? = null
+    private var dailyTasks: DailyTasks? = null
 
     private val startForResult = this.registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
         if (result.resultCode == Activity.RESULT_OK) {
             val intent = result.data
             handleReceivedData(intent)
@@ -50,10 +51,13 @@ class TasksFragment : Fragment() {
 
     private fun handleReceivedData(intent: Intent?) {
         intent?.let {
-            val s = it.getStringExtra("taskName")
-            s?.let { it1 ->
+            val existing = it.getBooleanExtra("alreadyExists", false)
+            if(existing) {
+                Toast.makeText(requireActivity(), "This task is already added.", Toast.LENGTH_SHORT).show()
+            }else{
                 DialogFragmentDataCallback.addTempData(
-                    it1.trim().toLowerCase().capitalize(), 0)
+                    it.getStringExtra("taskName")!!.trim().toLowerCase().capitalize(),0
+                )
             }
         }
     }
@@ -64,9 +68,8 @@ class TasksFragment : Fragment() {
         setHasOptionsMenu(true)
         //THIS IS TO ADD A CUSTOM FUNCTIONALITY TO BACK BUTTON ONLY FOR THIS FRAGMENT
         val callback: OnBackPressedCallback =
-            object : OnBackPressedCallback(true /* enabled by default */) {
+            object : OnBackPressedCallback(true ) {
                 override fun handleOnBackPressed() {
-
                     findNavController().popBackStack()
                 }
             }
@@ -100,7 +103,7 @@ class TasksFragment : Fragment() {
 
 
         //To determine what data to load after fragment initialization
-        if(date == "date"){
+        if (date == "date") {
             text_view_no_data.visibility = View.VISIBLE
             (requireActivity() as AppCompatActivity).stopService(
                 Intent(
@@ -112,15 +115,17 @@ class TasksFragment : Fragment() {
         }
 
         //Checking if the task opened is of current date or not
-        if(args?.date!= System.currentTimeMillis().convertToDashDate()){
+        if (args?.date != System.currentTimeMillis().convertToDashDate()) {
             taskAddbutton.visibility = View.INVISIBLE
             exploreButton.visibility = View.GONE
-            mAdapter = TasksListAdapter(viewModel.list, false, requireActivity()){
+            mAdapter = TasksListAdapter( false, requireActivity()) {
+                mAdapter.submitList(null)
                 findNavController().popBackStack()
             }
             mAdapter.notifyAboutChanges()
-        }else{
-            mAdapter = TasksListAdapter(viewModel.list, context = requireActivity()){
+        } else {
+            mAdapter = TasksListAdapter( context = requireActivity()) {
+                mAdapter.submitList(null)
                 findNavController().popBackStack()
             }
             mAdapter.notifyAboutChanges()
@@ -129,7 +134,7 @@ class TasksFragment : Fragment() {
         recycler_view_tasks.adapter = mAdapter
 
         exploreButton.setOnClickListener {
-                startForResult.launch(Intent(requireActivity(), ExploreTasksActivity::class.java))
+            startForResult.launch(Intent(requireActivity(), ExploreTasksActivity::class.java))
         }
 
         taskAddbutton.setOnClickListener {
@@ -155,11 +160,11 @@ class TasksFragment : Fragment() {
         viewModel.isDataLoaded.observe(viewLifecycleOwner, Observer {
             if (it) {
 
-                if(viewModel.list.isEmpty()){
+                if (viewModel.list.isEmpty()) {
                     recycler_view_tasks.visibility = View.GONE
                     text_view_no_data.visibility = View.VISIBLE
                     return@Observer
-                }else{
+                } else {
                     recycler_view_tasks.visibility = View.VISIBLE
                     text_view_no_data.visibility = View.GONE
                 }
@@ -195,23 +200,30 @@ class TasksFragment : Fragment() {
                 mAdapter.notifyAboutChanges()
                 viewModel.isDataLoaded.value = true
                 LoadingBarCallback.isLoading.value = false
-            } else if(it != null && it.taskName == ""){
+            } else if (it != null && it.taskName == "") {
                 LoadingBarCallback.isLoading.value = false
                 Toast.makeText(activity, "Enter some data", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        UpdateProgressCallback.isProgressUpdated.observe(viewLifecycleOwner, Observer {
+            if(it.third){
+                mAdapter.updateTask(DailyTasks(it.first,it.second))
+                UpdateProgressCallback.isProgressUpdated.value = Triple("",0,false)
             }
         })
 
     }
 
     //Dialog fragment
-    private fun callAddNewTaskFragment(){
+    private fun callAddNewTaskFragment() {
         val fragmentManager = activity?.supportFragmentManager
 
         val transaction = fragmentManager?.beginTransaction()
         transaction?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 
         transaction!!
-            .add(android.R.id.content, AddNewTaskDialogFragment(){
+            .add(android.R.id.content, AddNewTaskDialogFragment() {
                 hideSoftKeyboard(it)
                 activity?.supportFragmentManager?.popBackStackImmediate()
             })
@@ -226,7 +238,7 @@ class TasksFragment : Fragment() {
         (activity as MainActivity).pager.isUserInputEnabled = true
         (activity as MainActivity).showTab()
 
-        if(args?.date== fetchFormattedDate()){
+        if (args?.date == fetchFormattedDate() && mAdapter.totalTasks>0) {
             FirebaseCustomManager.updateDailyAnalytics(
                 mAdapter.tasksCompleted,
                 mAdapter.totalTasks,
@@ -258,5 +270,6 @@ class TasksFragment : Fragment() {
         val item: MenuItem = menu.findItem(R.id.action_settings)
         item.isVisible = false
     }
+
 
 }

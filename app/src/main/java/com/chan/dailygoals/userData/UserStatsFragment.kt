@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.*
 import android.widget.Toast
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
@@ -18,7 +17,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.chan.dailygoals.*
 import com.chan.dailygoals.databinding.FragmentUserStatsBinding
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.formatter.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_user_stats.*
 import kotlinx.coroutines.CoroutineScope
@@ -26,13 +25,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class UserStatsFragment : Fragment() {
 
     private lateinit var binding: FragmentUserStatsBinding
     private lateinit var viewModel: UserStatsViewModel
+    private lateinit var lineChart : LineChart
 
 
 
@@ -83,6 +82,14 @@ class UserStatsFragment : Fragment() {
             )
         })
 
+
+        viewModel.weeklyChart.observe(viewLifecycleOwner, {
+            if (it.size > 0) {
+                setBar(lineChartWeeklyTimeRecord,
+                    viewModel.weeklyChart.value!!,
+                requireContext())
+            }
+        })
 //        viewModel.weeklyChart.observe(viewLifecycleOwner, Observer {hash->
 //            val list = ArrayList<Entry>()
 //            hash.forEach {
@@ -98,6 +105,7 @@ class UserStatsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
     }
+
 
 
     override fun onResume() {
@@ -120,9 +128,11 @@ class UserStatsFragment : Fragment() {
         return if(item.itemId == R.id.action_share){
 
             binding.scrollViewFragmentUserStats.scrollToDescendant(binding.pieChartAllTimeRecord)
-           val file = takeScreenShot(binding.scrollViewFragmentUserStats,
+           val file = takeScreenShot(
+               binding.scrollViewFragmentUserStats,
                File(
-                   requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare")
+                   requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare"
+               )
            )
             shareScreenShot(file)
             true

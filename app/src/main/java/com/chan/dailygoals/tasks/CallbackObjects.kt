@@ -15,3 +15,7 @@ object DialogFragmentDataCallback {
 object LoadingBarCallback{
     var isLoading = MutableLiveData<Boolean>()
 }
+
+object UpdateProgressCallback{
+    var isProgressUpdated = MutableLiveData<Triple<String, Int, Boolean>>()
+}
