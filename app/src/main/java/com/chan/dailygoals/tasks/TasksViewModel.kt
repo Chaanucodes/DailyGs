@@ -27,8 +27,8 @@ class TasksViewModel(private val date : String) : ViewModel() {
                     (docSnap.data?.getValue("dailyTasks") as MutableMap<String, Int>?)?.let { mutableMap ->
                         mutableMap.forEach {
                             list.add(DailyTasks(it.key, it.value))
-                            isDataLoaded.value = true
                         }
+                        isDataLoaded.value = true
                         Log.i("TUSKSMODEAL","$date = ${docSnap.data}")
                     }
 
@@ -40,8 +40,8 @@ class TasksViewModel(private val date : String) : ViewModel() {
         FirebaseCustomManager.loadTodaysData("tasksVModel"){
             FirebaseCustomManager.tasksData.forEach {
                 list.add(DailyTasks(it.key, it.value))
-                isDataLoaded.value = true
             }
+            isDataLoaded.value = true
         }
     }
 

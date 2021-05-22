@@ -26,7 +26,7 @@
 
         <TextView
             android:id="@+id/percentage_task_item"
-            android:text="@{String.valueOf(task.progress)}"
+            android:text="@{String.valueOf(task.progress)+'%'}"
             android:textColor="@color/white"
             tools:text="70%"
             android:layout_gravity="center"

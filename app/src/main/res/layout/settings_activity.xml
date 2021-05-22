@@ -17,27 +17,17 @@
 
     <Button
         android:id="@+id/tv_logout"
-        android:background="@drawable/title_item_bg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:layout_margin="8dp"
-        android:gravity="start"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Logout"
-        android:textColor="@color/white"/>
+        style="@style/SettingsButtons"
+        android:text="Logout" />
 
     <Button
         android:id="@+id/tv_about"
-        android:background="@drawable/title_item_bg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:layout_margin="8dp"
-        android:gravity="start"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="About"
-        android:textColor="@color/white"/>
+        style="@style/SettingsButtons"
+        android:text="About" />
 
 </LinearLayout>
 </layout>

@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         val pagerAdapter = ScreenSlidePagerAdapter(this)
         setContentView(R.layout.activity_main)
 
-//        actionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.colorPrimaryDark)))
+        //Styling of action back and navigation bar
         supportActionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.colorPrimaryDark)))
         supportActionBar?.elevation = 0f
 

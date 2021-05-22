@@ -7,7 +7,8 @@ data class DailyTasks(
     var taskName: String = "",
     var progress: Int = 0,
     var timeStamp: Long = System.currentTimeMillis(),
-    var documentDate: String = ""
+    var documentDate: String = "",
+
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,

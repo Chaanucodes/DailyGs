@@ -17,6 +17,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.chan.dailygoals.*
 import com.chan.dailygoals.databinding.FragmentUserStatsBinding
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.Entry
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_user_stats.*
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class UserStatsFragment : Fragment() {
@@ -79,6 +82,18 @@ class UserStatsFragment : Fragment() {
                 "Do some tasks today and come tomorrow to get more stats"
             )
         })
+
+//        viewModel.weeklyChart.observe(viewLifecycleOwner, Observer {hash->
+//            val list = ArrayList<Entry>()
+//            hash.forEach {
+//                list.add(LineChart)
+//            }
+//
+//        })
+
+
+
+
 
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)

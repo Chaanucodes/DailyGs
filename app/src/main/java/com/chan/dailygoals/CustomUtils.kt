@@ -113,7 +113,7 @@ fun setDailyPieView(
 ) {
     val pieDataSet = PieDataSet(
         arrayListOf<PieEntry>(
-            PieEntry(completed, "     % Done"),
+            PieEntry(completed, "   % Done"),
             PieEntry((total - completed), "% Not done   ")
         ), ""
     )
@@ -137,5 +137,9 @@ fun setDailyPieView(
         setHoleColor(0x1000000)
         animate()
     }
+}
+
+fun setLineCharWeekly(){
+
 }
 

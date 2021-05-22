@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.chan.dailygoals.convertToDashDate
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.chan.dailygoals.tasks.LoadingBarCallback
 
@@ -29,13 +30,17 @@ class UserStatsViewModel : ViewModel() {
     val allTimeCompletedTasks: LiveData<Int>
         get() = _allTimeCompletedTasks
 
+    private var _weeklyChart = MutableLiveData<HashMap<String, Int>>()
+    val weeklyChart: LiveData<HashMap<String, Int>>
+        get() = _weeklyChart
+
     init {
         loadValues()
     }
 
-    fun forceLoadValues(){
+    fun forceLoadValues() {
         LoadingBarCallback.isLoading.value = true
-        FirebaseCustomManager.loadDailyAnalytics{
+        FirebaseCustomManager.loadDailyAnalytics {
             loadValues()
         }
     }
@@ -46,7 +51,29 @@ class UserStatsViewModel : ViewModel() {
         _totalTasksToday.value = FirebaseCustomManager.totalTasksToday
         _allTimeCompletedTasks.value = FirebaseCustomManager.allTimeCompletedTasks
         _allTimeTasks.value = FirebaseCustomManager.allTimeTasks
+//        loadWeeklyData()
         LoadingBarCallback.isLoading.value = false
+    }
+
+    private fun loadWeeklyData() {
+        if (FirebaseCustomManager.allTasks.isNotEmpty()) {
+            var dateCounter = 0
+            var value = 0
+            val hashMap = HashMap<String, Int>()
+            for (i in 0..6) {
+                if (FirebaseCustomManager.allTasks[dateCounter].documentDate.equals(
+                        (System.currentTimeMillis() - (86400000L * i)).convertToDashDate(), true
+                    )
+                ) {
+                    value = FirebaseCustomManager.allTasks[dateCounter].progress
+                    if(FirebaseCustomManager.allTasks.size-1>dateCounter)
+                    dateCounter++
+                }
+                hashMap[(System.currentTimeMillis() - (86400000L * i)).convertToDashDate()] = value
+                value = 0
+            }
+            _weeklyChart.value = hashMap
+        }
     }
 
     override fun onCleared() {

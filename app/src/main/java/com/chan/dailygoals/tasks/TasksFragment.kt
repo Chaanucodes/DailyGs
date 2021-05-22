@@ -27,6 +27,7 @@ import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.chan.dailygoals.models.DailyTasks
 import com.chan.dailygoals.tasks.exploreCategories.ExploreTasksActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.add_new_task_fragment.view.*
 import kotlinx.android.synthetic.main.tasks_fragment.*
 
 
@@ -50,7 +51,10 @@ class TasksFragment : Fragment() {
     private fun handleReceivedData(intent: Intent?) {
         intent?.let {
             val s = it.getStringExtra("taskName")
-            Toast.makeText(activity, s, Toast.LENGTH_SHORT).show()
+            s?.let { it1 ->
+                DialogFragmentDataCallback.addTempData(
+                    it1.trim().toLowerCase().capitalize(), 0)
+            }
         }
     }
 
@@ -62,6 +66,7 @@ class TasksFragment : Fragment() {
         val callback: OnBackPressedCallback =
             object : OnBackPressedCallback(true /* enabled by default */) {
                 override fun handleOnBackPressed() {
+
                     findNavController().popBackStack()
                 }
             }
@@ -109,6 +114,7 @@ class TasksFragment : Fragment() {
         //Checking if the task opened is of current date or not
         if(args?.date!= System.currentTimeMillis().convertToDashDate()){
             taskAddbutton.visibility = View.INVISIBLE
+            exploreButton.visibility = View.GONE
             mAdapter = TasksListAdapter(viewModel.list, false, requireActivity()){
                 findNavController().popBackStack()
             }
@@ -117,6 +123,7 @@ class TasksFragment : Fragment() {
             mAdapter = TasksListAdapter(viewModel.list, context = requireActivity()){
                 findNavController().popBackStack()
             }
+            mAdapter.notifyAboutChanges()
         }
 
         recycler_view_tasks.adapter = mAdapter
@@ -144,9 +151,19 @@ class TasksFragment : Fragment() {
             }
         })
 
+        //Observe if data is loaded to display the list
         viewModel.isDataLoaded.observe(viewLifecycleOwner, Observer {
             if (it) {
-                mAdapter.updateList(viewModel.list)
+
+                if(viewModel.list.isEmpty()){
+                    recycler_view_tasks.visibility = View.GONE
+                    text_view_no_data.visibility = View.VISIBLE
+                    return@Observer
+                }else{
+                    recycler_view_tasks.visibility = View.VISIBLE
+                    text_view_no_data.visibility = View.GONE
+                }
+                mAdapter.submitList(viewModel.list.toMutableList())
                 mAdapter.notifyAboutChanges()
                 if (dailyTasks != null) {
                     mAdapter.completeTask(dailyTasks!!)
@@ -172,9 +189,11 @@ class TasksFragment : Fragment() {
 //                hideSoftKeyboard(view)
                 FirebaseCustomManager.writeTodaysData(it)
                 viewModel.list.add(it)
-                mAdapter.updateList(viewModel.list)
+                mAdapter.submitList(viewModel.list.toMutableList())
+//                mAdapter.updateList(viewModel.list)
                 Log.i("TAKS_FRAGMENT", "${viewModel.list}")
                 mAdapter.notifyAboutChanges()
+                viewModel.isDataLoaded.value = true
                 LoadingBarCallback.isLoading.value = false
             } else if(it != null && it.taskName == ""){
                 LoadingBarCallback.isLoading.value = false
@@ -184,6 +203,7 @@ class TasksFragment : Fragment() {
 
     }
 
+    //Dialog fragment
     private fun callAddNewTaskFragment(){
         val fragmentManager = activity?.supportFragmentManager
 
@@ -193,12 +213,15 @@ class TasksFragment : Fragment() {
         transaction!!
             .add(android.R.id.content, AddNewTaskDialogFragment(){
                 hideSoftKeyboard(it)
+                activity?.supportFragmentManager?.popBackStackImmediate()
             })
             .addToBackStack(null)
             .commit()
     }
 
     override fun onStop() {
+
+        mAdapter.notifyAboutChanges()
         DialogFragmentDataCallback.tempDailyTaskObject.value = null
         (activity as MainActivity).pager.isUserInputEnabled = true
         (activity as MainActivity).showTab()
@@ -211,8 +234,12 @@ class TasksFragment : Fragment() {
             )
         }
 
+        if (dailyTasks != null) {
+            requireActivity().finish()
+        }
         super.onStop()
     }
+
 
     override fun onResume() {
         (activity as MainActivity).hideTab()

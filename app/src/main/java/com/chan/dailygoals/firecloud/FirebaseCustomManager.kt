@@ -34,17 +34,18 @@ object FirebaseCustomManager {
 
         val date = fetchFormattedDate()
         checkDocRefNullability()
-        docRef.document("$date")
+        docRef.document(date)
             .get().addOnSuccessListener { documentSnapshot ->
                 documentSnapshot.data?.let {
-                    tasksData = it.getValue("dailyTasks") as MutableMap<String, Int>
+                    (it.getValue("dailyTasks") as MutableMap<String, Long>).forEach { map ->
+                        tasksData[map.key] = map.value.toInt()
+                    }
                     todaysAverage =
                         (documentSnapshot.data?.getValue("totalCompletion") as Long).toInt()
                 }
                 if (from == "tasksVModel") {
                     startAct.invoke()
                 } else {
-
                     loadAllData(startAct)
                 }
 
@@ -53,21 +54,21 @@ object FirebaseCustomManager {
             }
     }
 
-    fun writeTodaysData(tasks: DailyTasks) {
+    fun writeTodaysData(task: DailyTasks) {
 
         val date = fetchFormattedDate()
-        tasksData[tasks.taskName] = tasks.progress
+        tasksData[task.taskName] = task.progress
         val dayAverage = getAverage(tasksData.values)
-        updateTasks(tasks)
+        updateTasks(task)
 
 
 
-        docRef.document("$date")
+        docRef.document(date)
             .set(
                 hashMapOf(
                     "dailyTasks" to tasksData,
                     "totalCompletion" to dayAverage,
-                    "timeStamp" to tasks.timeStamp
+                    "timeStamp" to task.timeStamp,
                 )
             ).addOnSuccessListener {
                 if (allTasks[0].documentDate != date) {
@@ -82,8 +83,8 @@ object FirebaseCustomManager {
                             documentDate = timeS.convertToDashDate()
                         )
                     )
-                }
 
+                }
                 docRef.document("$date")
                     .set(
                         hashMapOf(
@@ -92,13 +93,14 @@ object FirebaseCustomManager {
                         SetOptions.merge()
                     )
                 loadAllData()
+
             }
     }
 
-    fun deleteTask(data: String, forAllEntryDeletion : ()->Unit) {
+    fun deleteTask(data: String, forAllEntryDeletion: () -> Unit) {
 
         var containsCompleted = false
-        if (tasksData[data]!! == 100) {
+        if (tasksData[data]!!.toInt() == 100) {
             containsCompleted = true
         }
         tasksData.remove(data)
@@ -123,8 +125,10 @@ object FirebaseCustomManager {
                     }
                     if (tasksData.isEmpty()) {
                         deleteDayEntry(forAllEntryDeletion)
-                    } else {loadAllData()
-                        dataChangeNotifier.value = true}
+                    } else {
+                        loadAllData()
+                        dataChangeNotifier.value = true
+                    }
                 }
 
             }
@@ -138,6 +142,7 @@ object FirebaseCustomManager {
                 ).addOnSuccessListener {
                     totalCompletedTasksToday = 0
                     totalTasksToday = 0
+                    allTasks.removeAt(0)
                     loadAllData(forAllEntryDeletion)
                 }
             }
@@ -220,7 +225,7 @@ object FirebaseCustomManager {
             documentSnapshot.data?.let { data ->
                 allTimeTasks = (data.getValue("allTimeTasks") as Long).toInt()
                 allTimeCompletedTasks = (data.getValue("allTimeCompletedTasks") as Long).toInt()
-                task.invoke()
+                loadDaysActive { task() }
             }
 
         }.addOnFailureListener {
@@ -257,7 +262,7 @@ object FirebaseCustomManager {
         if (initialPoint == 0) {
             ref = docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
                 .limit(30)
-            allTasks.clear()
+
         } else {
             ref = docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
                 .startAfter(initialPoint)
@@ -265,32 +270,34 @@ object FirebaseCustomManager {
             startingPoint = initialPoint
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
 
-            ref.get().addOnSuccessListener { querySnapshot ->
-                querySnapshot.documents.forEachIndexed { i, docSnap ->
-                    docSnap.data?.let { data ->
-                        data.getValue("timeStamp")?.let {
-                            //here taskName is actually date, this is for TitleFragment
-                            allTasks.add(
-                                DailyTasks(
-                                    taskName = (it as Long).convertLongToDateString(),
-                                    timeStamp = it,
-                                    progress = (data.getValue("totalCompletion") as Long).toInt(),
-                                    documentDate = it.convertToDashDate()
-                                ))
-                        }
+
+        ref.get().addOnSuccessListener { docSnaphot ->
+            allTasks.clear()
+            docSnaphot.documents.forEachIndexed { i, docSnap ->
+                docSnap.data?.let { data ->
+                    data.getValue("timeStamp")?.let {
+
+                        //here taskName is actually date, this is for TitleFragment
+                        allTasks.add(
+                            DailyTasks(
+                                taskName = (it as Long).convertLongToDateString(),
+                                timeStamp = it,
+                                progress = (data.getValue("totalCompletion") as Long).toInt(),
+                                documentDate = it.convertToDashDate()
+                            )
+                        )
                     }
                 }
-
-                if (allTasks.isNullOrEmpty()) setNewUserData()
-                else loadDailyAnalytics()
-                startAct.invoke()
             }
-                .addOnFailureListener {
-                    Log.e("TAG_ALL_TASKS", it.toString())
-                }
+
+            if (allTasks.isNullOrEmpty()) setNewUserData()
+            else loadDailyAnalytics()
+            startAct.invoke()
         }
+            .addOnFailureListener {
+                Log.e("TAG_ALL_TASKS", it.toString())
+            }
 
     }
 
@@ -317,8 +324,6 @@ object FirebaseCustomManager {
 
 
     private fun updateDaysActive() {
-        if (daysActive == 0L) return
-
         profileRef
             .update("daysActive", FieldValue.increment(1))
     }
@@ -339,6 +344,8 @@ object FirebaseCustomManager {
                 }
                 if (firstLogin) {
                     loadTodaysData(startAct = startAct)
+                }else{
+                    startAct.invoke()
                 }
             }
     }

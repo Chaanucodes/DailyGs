@@ -9,7 +9,10 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.chan.dailygoals.R
 import com.chan.dailygoals.backgroundNotificationService.TasksService
@@ -24,7 +27,7 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
                        private var isMutable: Boolean = true,
                        private val context: Context,
                        private val dayDeletionCase : ()->Unit
-) : RecyclerView.Adapter<TasksListAdapter.TaskListViewHolder>(){
+) : ListAdapter<DailyTasks, TasksListAdapter.TaskListViewHolder>(TasksDiffCall){
 
     var totalTasks = 0
     var tasksCompleted = 0
@@ -37,14 +40,14 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
         tasks = list
         notifyAboutChanges()
     }
-    override fun getItemCount(): Int {
-        return tasks.size
-    }
+//    override fun getItemCount(): Int {
+//        return tasks.size
+//    }
 
     fun completeTask(dailyT: DailyTasks){
-        tasks.forEachIndexed { i, dl->
+        currentList.forEachIndexed { i, dl->
             if(dl.taskName == dailyT.taskName){
-                tasks[i].progress = 100
+                currentList[i].progress = 100
                 FirebaseCustomManager.updateProgress(dl.taskName, 100)
                 notifyAboutChanges()
             }
@@ -52,28 +55,27 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
     }
 
     fun notifyAboutChanges(){
-        notifyDataSetChanged()
+//        notifyDataSetChanged()
 
         tasksCompleted = 0
 
-            tasks.forEach { dt->
-                if(dt.progress == 100)
-                    tasksCompleted++
-            }
-            totalTasks = tasks.size
-
+        currentList.forEach { dt->
+            if(dt.progress == 100)
+                tasksCompleted++
+        }
+        totalTasks = currentList.size
 
     }
 
     override fun onBindViewHolder(holder: TaskListViewHolder, position: Int) {
-        val item = tasks[position]
+        val item = getItem(position)
         holder.bind(item, isMutable)
     }
 
     class TaskListViewHolder private constructor(
         private val binding: TaskItemBinding,
         private val context: Context,
-     val dayDeletionCase: () -> Unit) : RecyclerView.ViewHolder(binding.root){
+        val dayDeletionCase: () -> Unit) : RecyclerView.ViewHolder(binding.root){
 
         companion object{
             fun from(parent: ViewGroup, context: Context, dayDeletionCase: () -> Unit) : TaskListViewHolder{
@@ -122,17 +124,36 @@ class TasksListAdapter(private var tasks: List<DailyTasks>,
                             LoadingBarCallback.isLoading.value = false
                         }
                     }else if(mi.itemId == R.id.action_start_task_in_bg){
-                        Intent(context, TasksService::class.java)
-                            .apply {
-                                putExtra("inputExtra", dailyT)
-                                (context as AppCompatActivity).startService(this)
-                            }
+                        if(binding.percentageTaskItem.text.contains("100")){
+                            Toast.makeText(context, "Already completed", Toast.LENGTH_SHORT).show()
+                        }else{
+                            Intent(context, TasksService::class.java)
+                                .apply {
+                                    putExtra("inputExtra", dailyT)
+                                    (context as AppCompatActivity).startService(this)
+                                }
+                            Toast.makeText(context, "Click on notification when the task is over",
+                                Toast.LENGTH_LONG).show()
+                        }
+
                     }
                 }
                 true
             }
             popupMenu.show()
         }
+    }
+
+    object TasksDiffCall : DiffUtil.ItemCallback<DailyTasks>() {
+
+        override fun areItemsTheSame(oldItem: DailyTasks, newItem: DailyTasks): Boolean {
+            return oldItem.taskName == newItem.taskName
+        }
+
+        override fun areContentsTheSame(oldItem: DailyTasks, newItem: DailyTasks): Boolean {
+            return oldItem.progress == newItem.progress
+        }
+
     }
 
 }

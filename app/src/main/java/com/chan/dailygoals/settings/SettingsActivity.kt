@@ -24,8 +24,12 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //Styling of action back and navigation bar
         supportActionBar?.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.colorPrimaryDark)))
         supportActionBar?.elevation = 0f
+
+        window.statusBarColor = resources.getColor(R.color.colorPrimaryDark)
+        window.navigationBarColor = resources.getColor(R.color.colorAccent)
         supportActionBar?.title = "Settings"
 
         viewModel = ViewModelProvider(this).get(SettingsViewModel::class.java)
