@@ -1,6 +1,7 @@
 package com.chan.dailygoals.firecloud
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.chan.dailygoals.*
 import com.chan.dailygoals.models.DailyTasks
@@ -19,8 +20,14 @@ object FirebaseCustomManager {
         .document("${FirebaseAuth.getInstance().currentUser?.uid}").collection("ProfileAnalytics")
         .document("ProfileData")
 
+    var categoryRef = FirebaseFirestore.getInstance().collection("allUsers")
+        .document("${FirebaseAuth.getInstance().currentUser?.uid}")
+        .collection("CustomizedTasks")
+        .document("CustomTaskCategories")
+
     var tasksData: MutableMap<String, Int> = hashMapOf()
     private var todaysAverage: Int = 0
+    var myTaskCategories = ArrayList<String>()
     var allTasks: MutableList<DailyTasks> = mutableListOf()
     var dataChangeNotifier = MutableLiveData<Boolean>()
     var daysActive: Long = 0
@@ -47,26 +54,41 @@ object FirebaseCustomManager {
                             todaysAverage = tc.toInt()
                         }
                     }catch (e : NoSuchElementException){}
+                    finally {
+                        loadCustomizedTasks()
+                    }
                 }
+
                 if (from == "tasksVModel") {
                     startAct.invoke()
                 } else {
                     loadAllData(startAct)
                 }
-
-            }.addOnFailureListener {
-                Log.i("FIREBASE_LOAD_TODAY", it.toString())
             }
     }
 
-    fun writeTodaysData(task: DailyTasks) {
+
+    private fun loadCustomizedTasks(){
+        try {
+            categoryRef.get()
+                .addOnSuccessListener {qSnap->
+                    qSnap.data?.let {
+                        myTaskCategories = ((it["MyTasks"] as ArrayList<String>))
+                        Log.i("FIREBASE_CUSTOM_list", myTaskCategories.toString())
+                    }
+                }
+        }catch (e: NoSuchElementException){
+            Log.e("FIREBASE_CUSTOM", e.toString())
+        }
+    }
+
+    //Called from TitleFragment and TasksFragment
+    fun writeTodaysData(task: DailyTasks, doAfterLoadAllData : () -> Unit  = fun(){}) {
 
         val date = fetchFormattedDate()
         tasksData[task.taskName] = task.progress
         val dayAverage = getAverage(tasksData.values)
         updateTasks(task)
-
-
 
         docRef.document(date)
             .set(
@@ -85,7 +107,7 @@ object FirebaseCustomManager {
                                 "tasksCompletedToday", FieldValue.increment(1)
                             )
                         }
-                        dateUpdateAndLoadAllData()
+                        dateUpdateAndLoadAllData(doAfterLoadAllData)
                     }
                     updateDaysActive()
                     val timeS = System.currentTimeMillis()
@@ -100,13 +122,23 @@ object FirebaseCustomManager {
                     )
 
                 }else{
-                    dateUpdateAndLoadAllData()
+                    dateUpdateAndLoadAllData(doAfterLoadAllData)
                 }
 
             }
     }
 
-    private fun dateUpdateAndLoadAllData(){
+    fun addToMyCategories(name : String){
+        if(!myTaskCategories.contains(name.trim().toLowerCase().capitalize())){
+            categoryRef
+                .update("MyTasks", FieldValue.arrayUnion(name))
+                .addOnSuccessListener {
+                    myTaskCategories.add(name)
+                }
+        }
+    }
+
+    private fun dateUpdateAndLoadAllData(doAfterLoadAllData : () -> Unit  = fun(){}){
         docRef.document(fetchFormattedDate())
             .set(
                 hashMapOf(
@@ -114,7 +146,7 @@ object FirebaseCustomManager {
                 ),
                 SetOptions.merge()
             )
-        loadAllData()
+        loadAllData(doAfterLoadAllData)
     }
 
     fun deleteTask(data: String, forAllEntryDeletion: () -> Unit) {
@@ -336,7 +368,11 @@ object FirebaseCustomManager {
                     "allTimeTasks" to 0,
                     "allTimeCompletedTasks" to 0
                 ) as Map<String, Any>
-            )
+            ).addOnSuccessListener {
+                categoryRef.set(
+                    arrayListOf<String>()
+                )
+            }
     }
 
 //    private fun isLatestEntryOfToday(date: String) {
@@ -408,6 +444,7 @@ object FirebaseCustomManager {
         userName = ""
         docRef = FirebaseFirestore.getInstance().collection("null")
         profileRef = FirebaseFirestore.getInstance().collection("null").document("null")
+        categoryRef = FirebaseFirestore.getInstance().collection("null").document("null")
         tasksData = hashMapOf()
         todaysAverage = 0
         allTasks = mutableListOf()

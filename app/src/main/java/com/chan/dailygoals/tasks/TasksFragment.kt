@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,6 +29,8 @@ import com.chan.dailygoals.tasks.exploreCategories.ExploreTasksActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_new_task_fragment.view.*
 import kotlinx.android.synthetic.main.tasks_fragment.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class TasksFragment : Fragment() {
@@ -39,6 +41,11 @@ class TasksFragment : Fragment() {
     private var args: TasksFragmentArgs? = null
     private var date = "date"
     private var dailyTasks: DailyTasks? = null
+    var varSpinner: Spinner? = null
+    var varSpinnerData: List<String>? = null
+
+    var varScaleX = 0f
+    var varScaleY = 0f
 
     private val startForResult = this.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -52,11 +59,13 @@ class TasksFragment : Fragment() {
     private fun handleReceivedData(intent: Intent?) {
         intent?.let {
             val existing = it.getBooleanExtra("alreadyExists", false)
-            if(existing) {
-                Toast.makeText(requireActivity(), "This task is already added.", Toast.LENGTH_SHORT).show()
-            }else{
+            if (existing) {
+                Toast.makeText(requireActivity(), "This task is already added.",
+                    Toast.LENGTH_SHORT).show()
+            } else {
                 DialogFragmentDataCallback.addTempData(
-                    it.getStringExtra("taskName")!!.trim().toLowerCase().capitalize(),0
+                    it.getStringExtra("taskName")!!.trim().
+                    toLowerCase(Locale.ROOT).capitalize(Locale.ROOT), 0
                 )
             }
         }
@@ -68,7 +77,7 @@ class TasksFragment : Fragment() {
         setHasOptionsMenu(true)
         //THIS IS TO ADD A CUSTOM FUNCTIONALITY TO BACK BUTTON ONLY FOR THIS FRAGMENT
         val callback: OnBackPressedCallback =
-            object : OnBackPressedCallback(true ) {
+            object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     findNavController().popBackStack()
                 }
@@ -101,6 +110,7 @@ class TasksFragment : Fragment() {
 
         recycler_view_tasks.layoutManager = LinearLayoutManager(requireContext())
 
+// Create an ArrayAdapter using the string array and a default spinner layout
 
         //To determine what data to load after fragment initialization
         if (date == "date") {
@@ -118,13 +128,13 @@ class TasksFragment : Fragment() {
         if (args?.date != System.currentTimeMillis().convertToDashDate()) {
             taskAddbutton.visibility = View.INVISIBLE
             exploreButton.visibility = View.GONE
-            mAdapter = TasksListAdapter( false, requireActivity()) {
+            mAdapter = TasksListAdapter(false, requireActivity()) {
                 mAdapter.submitList(null)
                 findNavController().popBackStack()
             }
             mAdapter.notifyAboutChanges()
         } else {
-            mAdapter = TasksListAdapter( context = requireActivity()) {
+            mAdapter = TasksListAdapter(context = requireActivity()) {
                 mAdapter.submitList(null)
                 findNavController().popBackStack()
             }
@@ -139,7 +149,6 @@ class TasksFragment : Fragment() {
 
         taskAddbutton.setOnClickListener {
             callAddNewTaskFragment()
-//            Log.i("TAG_TASKS_FRAGMENT", DialogFragmentDataCallback.tempDailyTaskObject.value!!.taskName)
         }
 
         taskDoneButton.setOnClickListener {
@@ -206,14 +215,69 @@ class TasksFragment : Fragment() {
             }
         })
 
+
         UpdateProgressCallback.isProgressUpdated.observe(viewLifecycleOwner, Observer {
-            if(it.third){
-                mAdapter.updateTask(DailyTasks(it.first,it.second))
-                UpdateProgressCallback.isProgressUpdated.value = Triple("",0,false)
+            if (it.third) {
+                mAdapter.updateTask(DailyTasks(it.first, it.second))
+                UpdateProgressCallback.isProgressUpdated.value = Triple("", 0, false)
+            }
+        })
+
+        viewModel.isMyCategoriesLoaded.observe(viewLifecycleOwner, Observer {
+            if(it){
+                if(drop_down_my_categories.visibility == View.GONE)
+                    drop_down_my_categories.visibility = View.VISIBLE
+
+                renderSpinner(viewModel.myCategoriesList)
             }
         })
 
     }
+
+    private fun renderSpinner(myCategoriesList: ArrayList<String>) {
+
+        myCategoriesList.add(0,"Add from your list")
+
+        val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
+            requireContext(), R.layout.custom_my_categories_spinner_item, myCategoriesList
+        )
+
+        adapter.setDropDownViewResource(R.layout.custom_simple_spinner_dropdown_item)
+        drop_down_my_categories.adapter = adapter
+        drop_down_my_categories.isSelected = false
+
+        drop_down_my_categories.isSelected = false
+
+        drop_down_my_categories.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?, view: View?,
+                    position: Int, id: Long
+                ) {
+                    val s = parent?.getItemAtPosition(position).toString().
+                    trim().toLowerCase().capitalize()
+
+                    if(position>0){
+                        if (FirebaseCustomManager.tasksData.containsKey(s)) {
+                            Toast.makeText(
+                                requireActivity(),
+                                "This task is already added.",
+                                Toast.LENGTH_SHORT).show()
+                        } else
+                            DialogFragmentDataCallback.addTempData(s, 0)
+                        drop_down_my_categories.setSelection(0)
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
+                }
+        }
+
+    }
+
+
 
     //Dialog fragment
     private fun callAddNewTaskFragment() {
@@ -238,7 +302,7 @@ class TasksFragment : Fragment() {
         (activity as MainActivity).pager.isUserInputEnabled = true
         (activity as MainActivity).showTab()
 
-        if (args?.date == fetchFormattedDate() && mAdapter.totalTasks>0) {
+        if (args?.date == fetchFormattedDate() && mAdapter.totalTasks > 0) {
             FirebaseCustomManager.updateDailyAnalytics(
                 mAdapter.tasksCompleted,
                 mAdapter.totalTasks,

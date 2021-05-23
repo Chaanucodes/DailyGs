@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_gravity="center"
-    android:padding="8dp"
-    android:background="@drawable/dialog_frag_bg"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/dialog_frag_bg"
+    android:padding="8dp">
 
     <SeekBar
         android:id="@+id/seek_progress_new_task_dialog"
@@ -18,6 +17,7 @@
         android:layout_marginTop="24dp"
         android:ems="10"
         android:progress="0"
+        android:progressBackgroundTint="@color/colorPrimaryDark"
         app:layout_constraintStart_toEndOf="@+id/text_progress_new_task_dialog"
         app:layout_constraintTop_toBottomOf="@+id/edit_name_new_task_dialog" />
 
@@ -39,11 +39,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginBottom="32dp"
         android:text="Progress"
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_name_new_task_dialog" />
+
 
     <EditText
         android:id="@+id/edit_name_new_task_dialog"
@@ -51,10 +53,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:ems="10"
+        android:hint="Task name here"
+        android:inputType="textPersonName"
+        android:maxLength="24"
         android:textColor="@color/white"
         android:textColorHint="@color/colorBorderListItem"
-        android:inputType="textPersonName"
-        android:hint="Task name here"
         app:layout_constraintBaseline_toBaselineOf="@+id/text_name_new_task_dialog"
         app:layout_constraintStart_toEndOf="@+id/text_name_new_task_dialog"
         app:layout_constraintVertical_chainStyle="packed" />
@@ -72,38 +75,67 @@
         android:id="@+id/done_button_new_task_dialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="48dp"
         android:text="@string/done_button"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/cancel_button_new_task_done"
-        app:layout_constraintTop_toBottomOf="@+id/text_progress_new_task_dialog" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <Button
         android:id="@+id/cancel_button_new_task_done"
         style="?attr/materialButtonOutlinedStyle"
-        app:strokeColor="@color/colorBorderListItem"
-        android:textColor="@color/colorAccent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@android:string/cancel"
+        android:textColor="@color/colorAccent"
         app:layout_constraintBaseline_toBaselineOf="@+id/done_button_new_task_dialog"
         app:layout_constraintEnd_toStartOf="@+id/done_button_new_task_dialog"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="@color/colorBorderListItem" />
+
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="wrap_content"
+        android:layout_width="367dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="56dp"
+        android:background="@color/colorAccent"
+        android:gravity="center"
+        android:padding="4dp"
         android:text="@string/add_new_task"
-        android:textColor="@color/colorBorderListItem"
+        android:textAllCaps="true"
         android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#000000"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+        android:id="@+id/checkBox_add_to_categories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:checked="true"
+        android:text="Add this to my list"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_progress_new_task_dialog" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:text="Tasks added under 'my list' will appear daily for selection"
+        android:textStyle="italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBox_add_to_categories" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

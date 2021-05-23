@@ -47,7 +47,7 @@ fun setBar(
     dataVals: HashMap<Float, Float>,
     context: Context
 ){
-    lineChartWeeklyTimeRecord.setViewPortOffsets(60F, 0f, 60f, 80f)
+    lineChartWeeklyTimeRecord.setViewPortOffsets(60F, 20f, 60f, 80f)
     lineChartWeeklyTimeRecord.setBackgroundColor(Color.rgb(104, 241, 175))
 
     // no description text
@@ -71,8 +71,8 @@ fun setBar(
     // if disabled, scaling can be done on x- and y-axis separately
 
     // if disabled, scaling can be done on x- and y-axis separately
-    lineChartWeeklyTimeRecord.setPinchZoom(false)
-    lineChartWeeklyTimeRecord.setBackgroundColor(context.getColor(R.color.transparent_color))
+    lineChartWeeklyTimeRecord.setPinchZoom(true)
+    lineChartWeeklyTimeRecord.setBackgroundColor(context.getColor(R.color.transparent_med))
     lineChartWeeklyTimeRecord.setDrawGridBackground(false)
     lineChartWeeklyTimeRecord.maxHighlightDistance = 300F
 
@@ -103,8 +103,6 @@ fun setBar(
 
     // add data
 
-
-    // lower max, as cubic runs significantly slower than linear
 
     // lower max, as cubic runs significantly slower than linear
 
@@ -145,7 +143,7 @@ private fun setData(
     } else {
         // create a dataset and give it a type
         set1 = LineDataSet(values, "Weekly data")
-        set1.mode = LineDataSet.Mode.LINEAR
+        set1.mode = LineDataSet.Mode.HORIZONTAL_BEZIER
         set1.cubicIntensity = 0.2f
         set1.setDrawFilled(true)
         set1.setDrawCircles(false)

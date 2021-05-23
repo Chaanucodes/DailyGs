@@ -4,19 +4,15 @@ import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.view.WindowInsetsController
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.core.text.isDigitsOnly
+import androidx.appcompat.app.AppCompatActivity
 import com.chan.dailygoals.Constantes.REQ_CODE_AUTH
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.signin.SignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_login.*
 
@@ -34,6 +30,16 @@ class LoginActivity : AppCompatActivity() {
         supportActionBar?.hide()
         window.statusBarColor = resources.getColor(R.color.colorPrimaryDark)
         window.navigationBarColor = resources.getColor(R.color.colorAccent)
+        window.decorView.apply {
+            // Hide both the navigation bar and the status bar.
+            // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+            // a general rule, you should design your app to hide the status bar whenever you
+            // hide the navigation bar.
+
+            systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
+
+
 
         if(FirebaseAuth.getInstance().currentUser != null){
             textInputLayoutLogin.visibility = View.GONE
@@ -50,6 +56,10 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please enter a valid name", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }else{
+                circularProgressBar.visibility = View.VISIBLE
+                buttonLogin.visibility = View.GONE
+                edit_name_login.visibility = View.GONE
+
                 FirebaseCustomManager.userName = edit_name_login.text.toString()
                 hideSoftKeyboard(it)
                 logon()
@@ -63,10 +73,8 @@ class LoginActivity : AppCompatActivity() {
         val providers = arrayListOf(AuthUI.IdpConfig.GoogleBuilder().build())
 
         startActivityForResult(
-            AuthUI.getInstance().
-            createSignInIntentBuilder().
-            setIsSmartLockEnabled(false).
-            setAvailableProviders(providers).build(),
+            AuthUI.getInstance().createSignInIntentBuilder().setIsSmartLockEnabled(false)
+                .setAvailableProviders(providers).build(),
             REQ_CODE_AUTH
         )
 
@@ -91,9 +99,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        circularProgressBar.visibility = View.VISIBLE
-        buttonLogin.visibility = View.GONE
-        edit_name_login.visibility = View.GONE
+
 
         if(requestCode == REQ_CODE_AUTH){
             FirebaseCustomManager.passUsersName(true)
@@ -111,7 +117,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun hideSoftKeyboard(view : View) {
+    private fun hideSoftKeyboard(view: View) {
         val imm =
             getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)

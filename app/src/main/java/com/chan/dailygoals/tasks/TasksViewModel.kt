@@ -14,6 +14,10 @@ class TasksViewModel(private val date : String) : ViewModel() {
 
     var isDataLoaded = MutableLiveData<Boolean>()
 
+    var myCategoriesList = arrayListOf<String>()
+
+    var isMyCategoriesLoaded = MutableLiveData<Boolean>()
+
     init {
         if(date == System.currentTimeMillis().convertToDashDate())
         loadThisDayData()
@@ -31,17 +35,24 @@ class TasksViewModel(private val date : String) : ViewModel() {
                         isDataLoaded.value = true
                         Log.i("TUSKSMODEAL","$date = ${docSnap.data}")
                     }
-
             }
     }
 
     fun loadThisDayData() {
         list.clear()
         FirebaseCustomManager.loadTodaysData("tasksVModel"){
-            FirebaseCustomManager.tasksData.forEach {
-                list.add(DailyTasks(it.key, it.value))
+
+            if(FirebaseCustomManager.tasksData.isNotEmpty()){
+                FirebaseCustomManager.tasksData.forEach {
+                    list.add(DailyTasks(it.key, it.value))
+                }
+                isDataLoaded.value = true
             }
-            isDataLoaded.value = true
+            if(!FirebaseCustomManager.myTaskCategories.isNullOrEmpty()){
+                myCategoriesList = FirebaseCustomManager.myTaskCategories
+                isMyCategoriesLoaded.value = true
+            }
+
         }
     }
 

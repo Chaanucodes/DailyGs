@@ -49,7 +49,7 @@ class ExploreTasksActivity : AppCompatActivity() {
 
             val resultIntent = Intent()
 
-            if(FirebaseCustomManager.tasksData.containsKey(taskName)){
+            if(FirebaseCustomManager.tasksData.containsKey(taskName!!.trim().toLowerCase().capitalize())){
                 resultIntent.putExtra("alreadyExists",true)
             }else{
                 resultIntent.putExtra("taskName",taskName)

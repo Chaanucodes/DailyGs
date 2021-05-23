@@ -12,5 +12,6 @@
     <color name="transparent_med_weak">#45000000</color>
     <color name="transparent_med">#60000000</color>
     <color name="transparent_dark">#90000000</color>
+    <color name="transparent_darkest">#E6000000</color>
     <color name="weak_transparent">#10000000</color>
 </resources>

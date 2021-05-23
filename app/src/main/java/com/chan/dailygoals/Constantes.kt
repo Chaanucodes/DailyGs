@@ -4,6 +4,7 @@ import android.Manifest
 
 object Constantes {
     const val CHANNEL_ID = "DailyGoalsServiceChannel"
+    const val CHANNEL_ID_REMINDER = "DailyGoalsReminderChannel"
     const val REQ_CODE_AUTH = 2002
 
     const val TOTAL_DAYS_ACTIVE = "Total days active"

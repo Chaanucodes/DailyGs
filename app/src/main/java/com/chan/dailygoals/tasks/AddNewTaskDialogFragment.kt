@@ -10,9 +10,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.DialogFragment
 import com.chan.dailygoals.R
+import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import kotlinx.android.synthetic.main.add_new_task_fragment.*
 import kotlinx.android.synthetic.main.add_new_task_fragment.view.*
 
@@ -41,11 +43,21 @@ class AddNewTaskDialogFragment(
             this.dismiss()
         }
         v.done_button_new_task_dialog.setOnClickListener {
+
+            val str = v.edit_name_new_task_dialog.text.toString().trim().toLowerCase().capitalize()
             if (v.edit_name_new_task_dialog.text.isNotEmpty()){
+                if(FirebaseCustomManager.tasksData.containsKey(str)){
+                    Toast.makeText(v.context, "You already added this task", Toast.LENGTH_SHORT).show()
+                    v.edit_name_new_task_dialog.setText("")
+                    return@setOnClickListener
+                }
+
+                if(v.checkBox_add_to_categories.isChecked){
+                    FirebaseCustomManager.addToMyCategories(str)
+                }
                 closeKeyboard(v)
                 LoadingBarCallback.isLoading.value = true
-                DialogFragmentDataCallback.addTempData(
-                    v.edit_name_new_task_dialog.text.toString().trim().toLowerCase().capitalize(),
+                DialogFragmentDataCallback.addTempData(str,
                 v.seek_progress_new_task_dialog.progress)
                 this.dismiss()
             }

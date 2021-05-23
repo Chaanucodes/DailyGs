@@ -69,6 +69,13 @@ fun checkDocRefNullability() {
             .document("${FirebaseAuth.getInstance().currentUser?.uid}").collection("ProfileAnalytics")
             .document("ProfileData")
     }
+
+    if(FirebaseCustomManager.categoryRef.path.contains("null")){
+        FirebaseCustomManager.categoryRef = FirebaseFirestore.getInstance().collection("allUsers")
+            .document("${FirebaseAuth.getInstance().currentUser?.uid}")
+            .collection("CustomizedTasks")
+            .document("CustomTaskCategories")
+    }
 }
 
 fun takeScreenShot(view: View, file: File): File {
@@ -119,7 +126,7 @@ fun setDailyPieView(
 ) {
     val pieDataSet = PieDataSet(
         arrayListOf<PieEntry>(
-            PieEntry(completed, "   % Done"),
+            PieEntry(completed, " % Done"),
             PieEntry((total - completed), "% Not done   ")
         ), ""
     )
