@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.chan.dailygoals.*
+import com.chan.dailygoals.Constantes.DAILY_TASKS_LIMIT
 import com.chan.dailygoals.models.DailyTasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
@@ -36,6 +37,7 @@ object FirebaseCustomManager {
     var allTimeTasks = 0
     var allTimeCompletedTasks = 0
     var startingPoint: Int = 0
+    private lateinit var lastVisible: DocumentSnapshot
 
     fun loadTodaysData(from: String = "default", startAct: () -> Unit = fun() {}) {
 
@@ -62,7 +64,7 @@ object FirebaseCustomManager {
                 if (from == "tasksVModel") {
                     startAct.invoke()
                 } else {
-                    loadAllData(startAct)
+                    loadAllData(startAct = startAct)
                 }
             }
     }
@@ -146,7 +148,7 @@ object FirebaseCustomManager {
                 ),
                 SetOptions.merge()
             )
-        loadAllData(doAfterLoadAllData)
+        loadAllData(startAct = doAfterLoadAllData)
     }
 
     fun deleteTask(data: String, forAllEntryDeletion: () -> Unit) {
@@ -195,7 +197,7 @@ object FirebaseCustomManager {
                     totalCompletedTasksToday = 0
                     totalTasksToday = 0
                     allTasks.removeAt(0)
-                    loadAllData(forAllEntryDeletion)
+                    loadAllData(startAct = forAllEntryDeletion)
                 }
             }
     }
@@ -311,25 +313,31 @@ object FirebaseCustomManager {
     }
 
 
-    fun loadAllData(startAct: () -> Unit = fun() {}, initialPoint: Int = 0) {
+    fun loadAllData( loadMore : Boolean = false,
+                     startAct: () -> Unit = fun() {}) {
         checkDocRefNullability()
-        val ref: Query
-        if (initialPoint == 0) {
-            ref = docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
-                .limit(30)
 
-        } else {
-            ref = docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
-                .startAfter(initialPoint)
-                .limit(30)
-            startingPoint = initialPoint
+
+        val ref: Query = if (!loadMore) {
+            docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
+                .limit(DAILY_TASKS_LIMIT)
+
+        } else if(allTasks.size< daysActive){
+            docRef.orderBy("timeStamp", Query.Direction.DESCENDING)
+                .startAfter(lastVisible)
+                .limit(DAILY_TASKS_LIMIT)
+
+        }else{
+            return
         }
 
 
         ref.get().addOnSuccessListener { docSnaphot ->
-            if(initialPoint == 0)
+            if(!loadMore)
             allTasks.clear()
 
+
+            lastVisible = docSnaphot.documents[docSnaphot.size()-1]
             docSnaphot.documents.forEachIndexed { i, docSnap ->
                 docSnap.data?.let { data ->
                     data.getValue("timeStamp")?.let {
@@ -348,7 +356,7 @@ object FirebaseCustomManager {
             }
 
             if (allTasks.isNullOrEmpty()) setNewUserData()
-            else loadDailyAnalytics()
+            else if(!loadMore)loadDailyAnalytics()
             startAct.invoke()
         }
             .addOnFailureListener {
@@ -370,7 +378,7 @@ object FirebaseCustomManager {
                 ) as Map<String, Any>
             ).addOnSuccessListener {
                 categoryRef.set(
-                    arrayListOf<String>()
+                    hashMapOf("MyTasks" to arrayListOf<String>())
                 )
             }
     }

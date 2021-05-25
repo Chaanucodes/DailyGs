@@ -59,7 +59,7 @@ fun setBar(
     // enable touch gestures
 
     // enable touch gestures
-    lineChartWeeklyTimeRecord.setTouchEnabled(false)
+    lineChartWeeklyTimeRecord.setTouchEnabled(true)
 
 
     // enable scaling and dragging
@@ -109,7 +109,7 @@ fun setBar(
 
     lineChartWeeklyTimeRecord.legend.isEnabled = false
 
-    lineChartWeeklyTimeRecord.animateXY(1500, 1500)
+    lineChartWeeklyTimeRecord.animateXY(1100, 1100)
 
     // don't forget to refresh the drawing
 
@@ -158,7 +158,7 @@ private fun setData(
         set1.fillFormatter =
             IFillFormatter { _, _ ->
 //                    lineChartWeeklyTimeRecord.axisLeft.axisMinimum
-                lineChartWeeklyTimeRecord.xAxis.axisMinimum
+                lineChartWeeklyTimeRecord.xAxis.axisMaximum
             }
 
         // create a data object with the data sets

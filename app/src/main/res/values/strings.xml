@@ -16,4 +16,9 @@
     -->
     <string name="hello_world">Hello Square World!</string>
     <string name="no_data">NO DATA</string>
+    <string name="reminder_delay_info">We will remind you about completing your tasks after you have closed the app. You can choose here how many HOURS you want to wait until we remind you</string>
+    <string name="reminder_enable_info">Enable reminders to get notified about the pending tasks you may have today.</string>
+    <string name="logout">Logout</string>
+    <string name="about">About</string>
+    <string name="notification_settings">Notification settings</string>
 </resources>

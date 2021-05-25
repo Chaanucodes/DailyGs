@@ -3,6 +3,9 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#311B92</color>
     <color name="colorAccent">#9575CD</color>
+    <color name="customColorPrimaryDark">#3949AB</color>
+    <color name="customColorPrimary">#5C6BC0</color>
+    <color name="customColorAccent">#9FA8DA</color>
 
     <color name="colorBorderListItem">
         #D1C4E9</color>
@@ -14,4 +17,5 @@
     <color name="transparent_dark">#90000000</color>
     <color name="transparent_darkest">#E6000000</color>
     <color name="weak_transparent">#10000000</color>
+    <color name="weakest_transparent">#00000000</color>
 </resources>

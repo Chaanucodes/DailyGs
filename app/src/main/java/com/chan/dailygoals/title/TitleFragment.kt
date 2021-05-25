@@ -1,5 +1,7 @@
 package com.chan.dailygoals.title
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModelProviders
@@ -8,6 +10,7 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentTransaction
@@ -17,6 +20,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.chan.dailygoals.MainActivity
 import com.chan.dailygoals.R
 import com.chan.dailygoals.convertToDashDate
@@ -26,6 +30,8 @@ import com.chan.dailygoals.tasks.AddNewTaskDialogFragment
 import com.chan.dailygoals.tasks.DialogFragmentDataCallback
 import com.chan.dailygoals.tasks.LoadingBarCallback
 import com.chan.dailygoals.tasks.TasksListAdapter
+import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.android.synthetic.main.tasks_fragment.*
 import kotlinx.android.synthetic.main.title_fragment.*
 
 class TitleFragment : Fragment() {
@@ -33,8 +39,9 @@ class TitleFragment : Fragment() {
     private lateinit var navController: NavController
     private lateinit var mAdapter: TitleAdapter
     private lateinit var viewModel: TitleViewModel
+    private var textAnimated = false
 
-    companion object{
+    companion object {
 
     }
 
@@ -54,7 +61,7 @@ class TitleFragment : Fragment() {
 
         navController = Navigation.findNavController(view)
 
-        mAdapter = TitleAdapter(viewModel.list){
+        mAdapter = TitleAdapter(viewModel.list, requireContext()) {
             navController.navigate(TitleFragmentDirections.actionTitleFragmentToTasksFragment(it))
         }
 
@@ -63,7 +70,7 @@ class TitleFragment : Fragment() {
         mAdapter.notifyDataSetChanged()
 
         viewModel.listReady.observe(viewLifecycleOwner, Observer {
-            if (it){
+            if (it) {
                 mAdapter.updateList(viewModel.list)
                 mAdapter.notifyDataSetChanged()
             }
@@ -87,11 +94,40 @@ class TitleFragment : Fragment() {
         })
         Log.i("TAGGING_TITLE", "${FirebaseCustomManager.allTasks}")
         floatingActionButton.setOnClickListener {
-
-
-            //TODO: ADD DIALOG BAR IN TITLE FRAG
             callAddNewTaskFragment()
         }
+
+        title_recycle_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                    == FirebaseCustomManager.allTasks.size -1 &&
+                            FirebaseCustomManager.allTasks.size < FirebaseCustomManager.daysActive
+                ){
+                    text_view_load_more.visibility = View.VISIBLE
+                    if(!textAnimated){
+                        animateLayout()
+                        textAnimated = true
+                    }
+                }else{
+                    text_view_load_more.visibility = View.GONE
+                }
+                super.onScrolled(recyclerView, dx, dy)
+            }
+
+        }
+        )
+
+        text_view_load_more.setOnClickListener {
+            LoadingBarCallback.isLoading.value = true
+            FirebaseCustomManager.loadAllData(true){
+                viewModel.loadData()
+                LoadingBarCallback.isLoading.value = false
+                if(viewModel.list.size == FirebaseCustomManager.daysActive.toInt())
+                    Toast.makeText(requireContext(), "All data loaded", Toast.LENGTH_SHORT).show()
+                title_recycle_view.scrollToPosition(viewModel.list.size-1)
+            }
+        }
+
 //        setHasOptionsMenu(true)
     }
 
@@ -118,9 +154,31 @@ class TitleFragment : Fragment() {
     }
 
     override fun onResume() {
-        (requireActivity() as AppCompatActivity). supportActionBar?.title =
+        (requireActivity() as AppCompatActivity).supportActionBar?.title =
             "Welcome, ${FirebaseCustomManager.userName}"
         super.onResume()
+    }
+
+
+    override fun onDestroyView() {
+        FirebaseCustomManager.startingPoint = 0
+        super.onDestroyView()
+    }
+
+    private fun animateLayout() {
+        val colorFrom = resources.getColor(R.color.colorAccent)
+        val colorTo = resources.getColor(R.color.colorPrimaryDark)
+        val colorLast = resources.getColor(R.color.colorPrimary)
+        val colorAnimation =
+            ValueAnimator.ofObject(ArgbEvaluator(), colorFrom, colorTo, colorLast, colorFrom)
+        colorAnimation.duration = 1500 // milliseconds
+        colorAnimation.repeatCount = 0
+        colorAnimation.repeatMode = ValueAnimator.REVERSE
+
+        colorAnimation.addUpdateListener { animator ->
+            text_view_load_more.setBackgroundColor(animator.animatedValue as Int)
+        }
+        colorAnimation.start()
     }
 
 }

@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                 progressBar.visibility = View.VISIBLE
             }else{
                 if(progressBar.visibility == View.VISIBLE)
-                    progressBar.visibility = View.INVISIBLE
+                    progressBar.visibility = View.GONE
             }
         })
         val tabLayoutMediator = TabLayoutMediator(tabLayout, pager, TabLayoutMediator.TabConfigurationStrategy{

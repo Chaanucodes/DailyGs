@@ -22,6 +22,7 @@
 
         <ScrollView
             android:id="@+id/scroll_view_fragment_user_stats"
+            android:scrollbarThumbVertical="@color/transparent_dark"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/bg_app_gradient">

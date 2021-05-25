@@ -147,7 +147,7 @@ fun setDailyPieView(
         //transparent color
         holeRadius = 40.0f
 //            setDrawSlicesUnderHole(true)
-        setHoleColor(0x1000000)
+        setHoleColor(0x3000000)
         animate()
     }
 }

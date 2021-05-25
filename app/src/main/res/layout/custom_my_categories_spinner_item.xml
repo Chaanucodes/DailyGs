@@ -3,7 +3,7 @@
     android:id="@android:id/text1"
     style="?android:attr/spinnerItemStyle"
     android:singleLine="true"
-    android:textColor="@color/white"
+    android:textColor="@color/colorAccent"
     android:background="@color/colorPrimaryDark"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

@@ -65,6 +65,8 @@ dependencies {
     // FirebaseUI for Firebase Auth
     implementation 'com.firebaseui:firebase-ui-auth:7.1.1'
 
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+
     //PieChart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     compileOnly 'com.google.android.wearable:wearable:2.6.0'

@@ -1,6 +1,7 @@
 package com.chan.dailygoals.userData
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -31,8 +32,7 @@ class UserStatsFragment : Fragment() {
 
     private lateinit var binding: FragmentUserStatsBinding
     private lateinit var viewModel: UserStatsViewModel
-    private lateinit var lineChart : LineChart
-
+    private lateinit var lineChart: LineChart
 
 
     override fun onCreateView(
@@ -53,6 +53,8 @@ class UserStatsFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             verifyStoragePermission()
         }
+
+        binding.scrollViewFragmentUserStats.animate()
 
         refresh_layout_user_stats_fragment.setOnRefreshListener {
             viewModel.forceLoadValues()
@@ -85,9 +87,11 @@ class UserStatsFragment : Fragment() {
 
         viewModel.weeklyChart.observe(viewLifecycleOwner, {
             if (it.size > 0) {
-                setBar(lineChartWeeklyTimeRecord,
+                setBar(
+                    lineChartWeeklyTimeRecord,
                     viewModel.weeklyChart.value!!,
-                requireContext())
+                    requireContext()
+                )
             }
         })
 //        viewModel.weeklyChart.observe(viewLifecycleOwner, Observer {hash->
@@ -99,13 +103,9 @@ class UserStatsFragment : Fragment() {
 //        })
 
 
-
-
-
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
     }
-
 
 
     override fun onResume() {
@@ -124,19 +124,25 @@ class UserStatsFragment : Fragment() {
 
         inflater.inflate(R.menu.share_menu, menu)
     }
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if(item.itemId == R.id.action_share){
 
-            binding.scrollViewFragmentUserStats.scrollToDescendant(binding.pieChartAllTimeRecord)
-           val file = takeScreenShot(
-               binding.scrollViewFragmentUserStats,
-               File(
-                   requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare"
-               )
-           )
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if (item.itemId == R.id.action_share) {
+
+            binding.scrollViewFragmentUserStats.smoothScrollTo(
+                0,
+                binding.lineChartWeeklyTimeRecord.bottom
+            )
+
+            val file = takeScreenShot(
+                binding.scrollViewFragmentUserStats,
+                File(
+                    requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "FilShare"
+                )
+            )
             shareScreenShot(file)
             true
-        }else false
+        } else false
     }
 
     //Share ScreenShot

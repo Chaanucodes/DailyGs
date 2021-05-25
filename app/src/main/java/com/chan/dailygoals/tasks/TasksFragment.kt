@@ -18,11 +18,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.chan.dailygoals.MainActivity
+import androidx.work.*
+import com.chan.dailygoals.*
+import com.chan.dailygoals.Constantes.WORK_MANAGER_REMINDER_UNIQUE_NAME
 import com.chan.dailygoals.R
+import com.chan.dailygoals.backgroundNotificationService.DailyGoalReminders
 import com.chan.dailygoals.backgroundNotificationService.TasksService
-import com.chan.dailygoals.convertToDashDate
-import com.chan.dailygoals.fetchFormattedDate
 import com.chan.dailygoals.firecloud.FirebaseCustomManager
 import com.chan.dailygoals.models.DailyTasks
 import com.chan.dailygoals.tasks.exploreCategories.ExploreTasksActivity
@@ -30,6 +31,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_new_task_fragment.view.*
 import kotlinx.android.synthetic.main.tasks_fragment.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 
@@ -41,11 +43,7 @@ class TasksFragment : Fragment() {
     private var args: TasksFragmentArgs? = null
     private var date = "date"
     private var dailyTasks: DailyTasks? = null
-    var varSpinner: Spinner? = null
-    var varSpinnerData: List<String>? = null
-
-    var varScaleX = 0f
-    var varScaleY = 0f
+    private lateinit var prefsManager : CustomPrefManager
 
     private val startForResult = this.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -74,6 +72,7 @@ class TasksFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        prefsManager = CustomPrefManager(requireContext())
         setHasOptionsMenu(true)
         //THIS IS TO ADD A CUSTOM FUNCTIONALITY TO BACK BUTTON ONLY FOR THIS FRAGMENT
         val callback: OnBackPressedCallback =
@@ -303,6 +302,18 @@ class TasksFragment : Fragment() {
         (activity as MainActivity).showTab()
 
         if (args?.date == fetchFormattedDate() && mAdapter.totalTasks > 0) {
+
+            if(mAdapter.totalTasks>mAdapter.tasksCompleted && !mAdapter.currentList.isNullOrEmpty()
+                && viewModel.list.isNotEmpty()){
+                mAdapter.currentList.forEach {
+                    if(it.progress<100){
+                        prefsManager.savePendingTasksPrefs(it.taskName)
+                        if(prefsManager.readShowNotificationPrefs()) setNotificationForReminder()
+                        return@forEach
+                    }
+                }
+            }
+
             FirebaseCustomManager.updateDailyAnalytics(
                 mAdapter.tasksCompleted,
                 mAdapter.totalTasks,
@@ -333,6 +344,27 @@ class TasksFragment : Fragment() {
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item: MenuItem = menu.findItem(R.id.action_settings)
         item.isVisible = false
+    }
+
+    private fun setNotificationForReminder() {
+        if(prefsManager.readShowNotificationPrefs()){
+            val constraints = Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build()
+
+            prefsManager.saveNotificationDatePrefs(fetchFormattedDate())
+            val uploadWorkRequest: OneTimeWorkRequest =
+                OneTimeWorkRequestBuilder<DailyGoalReminders>()
+                    .setConstraints(constraints)
+                    .setInitialDelay(prefsManager.readNotificationHoursPrefs().toLong(), TimeUnit.HOURS)
+                    .build()
+
+            WorkManager
+                .getInstance(requireContext())
+                .enqueueUniqueWork(WORK_MANAGER_REMINDER_UNIQUE_NAME,
+                    ExistingWorkPolicy.REPLACE
+                    ,uploadWorkRequest)
+        }
     }
 
 
